@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Fecho.Core/Fecho.Core.csproj" />
+    <ProjectReference Include="../Fecho.Infraestrutura/Fecho.Infraestrutura.csproj" />
+  </ItemGroup>
+</Project>
