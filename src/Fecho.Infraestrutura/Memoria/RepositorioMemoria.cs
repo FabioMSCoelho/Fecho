@@ -16,9 +16,10 @@ public class RepositorioMemoria<T> : IRepositorio<T> where T : EntidadeBase
         ArgumentNullException.ThrowIfNull(entidade);
         if (_dados.ContainsKey(entidade.Id))
             throw new InvalidOperationException($"Id {entidade.Id} já cadastrado em {typeof(T).Name}.");
+        int proximo = Math.Max(_proximoId, checked(entidade.Id + 1));
         ValidarNovo(entidade); // Despacho polimórfico para a regra específica da subclasse.
         _dados.Add(entidade.Id, entidade);
-        _proximoId = Math.Max(_proximoId, checked(entidade.Id + 1));
+        _proximoId = proximo;
     }
 
     protected virtual void ValidarNovo(T entidade) { }

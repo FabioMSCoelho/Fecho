@@ -1,4 +1,5 @@
 using Fecho.Core.Enums;
+using System.Text;
 
 namespace Fecho.Core.Entidades;
 
@@ -22,6 +23,8 @@ public sealed class Objeto : EntidadeBase
         Categoria = categoria ?? throw new ArgumentNullException(nameof(categoria));
         Nome = Validacao.Texto(nome, nameof(nome), 100);
         Descricao = Validacao.Opcional(descricao, nameof(descricao), 65_535);
+        if (Descricao is not null && Encoding.UTF8.GetByteCount(Descricao) > 65_535)
+            throw new ArgumentException("Descrição excede o limite em bytes do campo TEXT do MySQL.");
         EstadoConservacao = Validacao.EnumValido(estadoConservacao);
         if (valorEstimado is < 0 or > 99_999_999.99m ||
             (valorEstimado.HasValue && decimal.Round(valorEstimado.Value, 2) != valorEstimado))
