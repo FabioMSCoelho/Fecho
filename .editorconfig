@@ -9,3 +9,6 @@ indent_size = 4
 
 [*.md]
 indent_size = 2
+
+[*.{yml,yaml,json,csproj,props,slnx}]
+indent_size = 2

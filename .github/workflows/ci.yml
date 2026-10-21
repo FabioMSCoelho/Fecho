@@ -1,0 +1,27 @@
+name: Validar entrega
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Compilar sem avisos
+        run: dotnet build Fecho.slnx --configuration Release --disable-build-servers -m:1
+      - name: Executar os cenários de negócio
+        run: dotnet tests/Fecho.Testes/bin/Release/net10.0/Fecho.Testes.dll
+      - name: Executar a demonstração
+        run: dotnet src/Fecho.Console/bin/Release/net10.0/Fecho.Console.dll
