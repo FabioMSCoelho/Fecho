@@ -6,6 +6,20 @@ using MySqlConnector;
 var conexao = ConexaoMySql.DoAmbiente();
 conexao.Verificar();
 var app = new CategoriaService(new RepositorioCategoriasMySql(conexao));
+
+// Modo interno da suíte: o processo secundário só consulta, sem criar fixtures.
+if (args.Length > 0)
+{
+    if (args is ["--consultar-id", var texto] && int.TryParse(texto, out var id) && id > 0)
+    {
+        var categoria = app.Buscar(id);
+        if (categoria is null) Environment.ExitCode = 3;
+        else Console.WriteLine(categoria.Nome);
+    }
+    else Environment.ExitCode = 2;
+    return;
+}
+
 var prefixo = "Teste-" + Guid.NewGuid().ToString("N")[..12];
 var ids = new List<int>();
 int? usuarioId = null, objetoId = null;
@@ -29,10 +43,13 @@ try
     Exigir(app.Listar().Any(x => x.Id == c.Id), "Listagem lê o registro inserido");
     var outraInstancia = new CategoriaService(new RepositorioCategoriasMySql(ConexaoMySql.DoAmbiente()));
     Exigir(outraInstancia.Buscar(c.Id)?.Nome == prefixo, "Nova conexão recupera o registro persistido");
+    Exigir(ProcessoPersistencia.ConsultaConfere(c.Id, prefixo), "Outro processo recupera o cadastro persistido");
     Falha(() => app.Cadastrar(prefixo.ToUpperInvariant()), "já existe", "Nome duplicado respeita collation do MySQL");
     Exigir(app.Atualizar(c.Id, prefixo + " atualizado", null), "UPDATE altera registro");
     Exigir(outraInstancia.Buscar(c.Id) is { Descricao: null } atualizado && atualizado.Nome.EndsWith(" atualizado"),
         "Nova conexão lê atualização e descrição NULL");
+    Exigir(ProcessoPersistencia.ConsultaConfere(c.Id, prefixo + " atualizado"),
+        "Outro processo recupera a atualização persistida");
     Exigir(app.Atualizar(c.Id, prefixo + " atualizado", null), "UPDATE idêntico reconhece registro existente");
     var segunda = app.Cadastrar(prefixo + " segunda"); ids.Add(segunda.Id);
     Falha(() => app.Atualizar(segunda.Id, prefixo + " atualizado"), "já existe", "UPDATE duplicado é rejeitado");
@@ -58,6 +75,7 @@ try
     Exigir(app.Buscar(c.Id) is not null, "DELETE rejeitado preserva categoria");
     Exigir(app.Excluir(segunda.Id), "DELETE remove registro sem vínculos");
     Exigir(outraInstancia.Buscar(segunda.Id) is null, "Nova conexão confirma exclusão persistida");
+    Exigir(ProcessoPersistencia.ConsultaConfere(segunda.Id, null), "Outro processo confirma exclusão persistida");
     Exigir(!app.Excluir(segunda.Id) && !app.Atualizar(segunda.Id, "Ausente"), "Operações em ID ausente retornam false");
     using var existente = conexao.Abrir();
     var opcoes = new MySqlConnectionStringBuilder(existente.ConnectionString)
