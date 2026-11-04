@@ -25,3 +25,16 @@ jobs:
         run: dotnet tests/Fecho.Testes/bin/Release/net10.0/Fecho.Testes.dll
       - name: Executar a demonstração
         run: dotnet src/Fecho.Console/bin/Release/net10.0/Fecho.Console.dll
+      - name: Validar CRUD com MySQL real
+        env:
+          FECHO_DB_PASSWORD: fecho-ci-local-only
+          MYSQL_ROOT_PASSWORD: fecho-ci-root-local-only
+        run: |
+          docker compose up -d --wait
+          bash scripts/fecho.sh integration
+      - name: Parar banco de teste
+        if: always()
+        env:
+          FECHO_DB_PASSWORD: fecho-ci-local-only
+          MYSQL_ROOT_PASSWORD: fecho-ci-root-local-only
+        run: docker compose down

@@ -1,0 +1,20 @@
+services:
+  mysql:
+    image: mysql:8.4
+    ports:
+      - "127.0.0.1:${FECHO_DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Defina MYSQL_ROOT_PASSWORD no .env}
+      MYSQL_USER: fecho
+      MYSQL_PASSWORD: ${FECHO_DB_PASSWORD:?Defina FECHO_DB_PASSWORD no .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/fecho.sql:/docker-entrypoint-initdb.d/01-fecho.sql:ro
+      - ./database/permissoes-local.sql:/docker-entrypoint-initdb.d/02-permissoes.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -u "$$MYSQL_USER" fecho -e "SELECT id FROM categorias LIMIT 0"']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+volumes:
+  mysql_data:

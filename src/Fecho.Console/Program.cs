@@ -5,6 +5,17 @@ using Fecho.Core.Enums;
 using Fecho.Infraestrutura;
 
 Console.OutputEncoding = Encoding.UTF8;
+if (args.Length > 0)
+{
+    if (args is ["--crud"])
+        Environment.ExitCode = Fecho.ConsoleApp.MenuCategorias.Executar();
+    else
+    {
+        Console.Error.WriteLine("Uso: Fecho.Console [--crud]");
+        Environment.ExitCode = 2;
+    }
+    return;
+}
 Console.WriteLine("FECHÔ — demonstração da entrega de POO\n");
 var app = new AmbienteMemoria();
 var fabio = app.Cadastro.CadastrarUsuario("Fábio", "fabio@example.com", "Fecho@2026", "11999990001", "São Paulo");

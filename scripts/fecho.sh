@@ -19,13 +19,17 @@ export DOTNET_CLI_HOME="${DOTNET_CLI_HOME:-$raiz/.tools/cli-home}"
 comando="${1:-demo}"
 case "$comando" in
     build) projeto="Fecho.slnx" ;;
+    crud) projeto="src/Fecho.Console/Fecho.Console.csproj" ;;
+    integration) projeto="tests/Fecho.Integracao/Fecho.Integracao.csproj" ;;
     demo) projeto="src/Fecho.Console/Fecho.Console.csproj" ;;
     test) projeto="tests/Fecho.Testes/Fecho.Testes.csproj" ;;
-    *) printf '%s\n' 'Uso: bash scripts/fecho.sh [demo|test|build]' >&2; exit 2 ;;
+    *) printf '%s\n' 'Uso: bash scripts/fecho.sh [demo|crud|test|integration|build]' >&2; exit 2 ;;
 esac
 
 "$dotnet_exe" build "$projeto" --configuration Release --nologo --disable-build-servers -m:1
 case "$comando" in
+    crud) exec "$dotnet_exe" src/Fecho.Console/bin/Release/net10.0/Fecho.Console.dll --crud ;;
+    integration) exec "$dotnet_exe" tests/Fecho.Integracao/bin/Release/net10.0/Fecho.Integracao.dll ;;
     demo) exec "$dotnet_exe" src/Fecho.Console/bin/Release/net10.0/Fecho.Console.dll ;;
     test) exec "$dotnet_exe" tests/Fecho.Testes/bin/Release/net10.0/Fecho.Testes.dll ;;
 esac

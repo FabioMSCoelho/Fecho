@@ -158,9 +158,19 @@ O material não detalhava todos os casos abaixo; estas são as decisões da impl
 - O contato continua disponível no histórico concluído, mas é revogado em matches
   cancelados. Usuários inativos não negociam nem têm seu contato liberado.
 
-## Limites e próxima integração
+## Persistência adicionada nesta entrega
 
-A aplicação é monoprocesso e sequencial, com dados voláteis. Não há garantia de
+O CRUD de categorias usa `CategoriaService` → `ICrudCategorias` →
+`RepositorioCategoriasMySql`, com `ConexaoMySql` e MySqlConnector.
+O novo contrato deixa INSERT gerar o ID e explicita UPDATE/DELETE. O contrato
+`IRepositorio<T>` anterior continua atendendo os serviços de negociação em memória.
+Não se usa `MAX(id)+1`. Cada escrita do CRUD é uma única instrução SQL atômica;
+FKs e a collation do MySQL controlam vínculos e unicidade. O console não contém SQL.
+Leia [CRUD-MYSQL.md](CRUD-MYSQL.md) para execução e demonstração.
+
+## Limites da demonstração anterior e próxima integração
+
+A demonstração anterior de negociação é monoprocesso e sequencial, com dados voláteis. Não há garantia de
 concorrência, transações ou durabilidade. A conclusão valida os dados antes de
 alterar estados; isso não substitui uma transação de banco.
 

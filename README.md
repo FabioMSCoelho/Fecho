@@ -1,4 +1,4 @@
-# Fechô — classes base e debate arquitetural
+# Fechô — CRUD MySQL e classes de domínio
 
 Projeto acadêmico de **Fábio Coelho e Giovana Almeida**. O Fechô conecta pessoas
 que desejam trocar objetos: duas curtidas recíprocas em objetos específicos geram
@@ -7,6 +7,24 @@ um match e liberam o contato para combinar a troca.
 Esta entrega contém as classes base do backend em **C# / .NET 10**, com herança,
 polimorfismo, coleções em memória e uma demonstração por terminal. O modelo segue
 as sete entidades dos slides e preserva o [SQL original](database/fecho.sql).
+
+## Entrega atual: CRUD funcional no MySQL
+
+O console agora oferece cadastro, listagem, busca, atualização e exclusão de
+**categorias** no banco original. Acesso a dados separado em repositório,
+MySqlConnector 2.6.2, consultas parametrizadas e tratamento de falhas de conexão,
+duplicidade e vínculos por chave estrangeira.
+
+Siga [a preparação local e o roteiro para o professor](docs/CRUD-MYSQL.md).
+Com o MySQL preparado e as variáveis `FECHO_DB_*` exportadas:
+
+```sh
+bash scripts/fecho.sh crud
+bash scripts/fecho.sh integration
+```
+
+A demonstração e os 41 testes da etapa anterior continuam disponíveis abaixo.
+O CRUD de categorias persiste em MySQL; o cenário de negociação permanece em memória.
 
 ## Executar em Linux ou macOS
 
@@ -20,8 +38,8 @@ bash scripts/fecho.sh test
 ```
 
 O script também reconhece um SDK instalado localmente em `.tools/dotnet`.
-Após instalar o SDK, a compilação não baixa pacotes: todos os projetos usam
-somente a biblioteca padrão. MySQL não precisa estar instalado para rodar esta etapa.
+A primeira compilação restaura o driver MySqlConnector pelo NuGet. MySQL só é
+necessário para `crud` e `integration`; a demo anterior e seus testes usam memória.
 
 ## Executar em Windows ou diretamente pelo .NET
 
@@ -109,9 +127,9 @@ executado online depois que o repositório for publicado.
 
 ## Escopo desta etapa
 
-O banco foi modelado, mas a persistência real em MySQL pertence a uma próxima
-integração. Esta entrega manipula os objetos em memória antes dessa persistência.
-Não inclui API HTTP, interface web, sessão de login, envio de mensagens, OAuth,
+O banco original agora é usado no CRUD de categorias. Os demais fluxos da
+demonstração de POO ainda manipulam objetos em memória.
+O CRUD de categorias desta entrega está descrito acima. Não inclui API HTTP, interface web, sessão de login, envio de mensagens, OAuth,
 galeria de fotos ou avaliações. A conferência de senha implementada é uma base
 para autenticação; ainda não constitui um sistema de autenticação web.
 

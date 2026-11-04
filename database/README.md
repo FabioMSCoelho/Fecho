@@ -1,8 +1,9 @@
 # Banco original e correspondência das classes
 
-`fecho.sql` é uma cópia integral do arquivo fornecido pela equipe. O código desta
-etapa não executa o script nem abre uma conexão MySQL. Os testes validam regras
-em memória, não comprovam persistência ou comportamento de um servidor MySQL.
+`fecho.sql` é uma cópia integral do arquivo fornecido pela equipe. O CRUD de categorias conecta-se a esse esquema usando MySqlConnector.
+Veja [setup e demonstração](../docs/CRUD-MYSQL.md). A aplicação não importa o
+script automaticamente; o Compose o importa na criação de um volume vazio.
+Os 41 testes originais validam memória; a suíte Fecho.Integracao valida MySQL real.
 
 | Tabela | Classe | Relações representadas |
 | --- | --- | --- |
@@ -43,5 +44,5 @@ Para futura importação em uma instância onde o banco `fecho` ainda não exist
 mysql -u SEU_USUARIO -p < database/fecho.sql
 ```
 
-Criar as tabelas não integra a aplicação ao banco. Consulte os passos necessários
-em [ARQUITETURA.md](../docs/ARQUITETURA.md).
+Depois da importação, configure as variáveis FECHO_DB_* e execute o CRUD,
+conforme [CRUD-MYSQL.md](../docs/CRUD-MYSQL.md).
