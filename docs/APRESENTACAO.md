@@ -1,5 +1,9 @@
 # Roteiro do debate — até 10 minutos
 
+> Este documento registra a etapa anterior de herança, polimorfismo e coleções.
+> Para a entrega atual, com demonstração prática do CRUD ao professor, use
+> [CRUD-MYSQL.md](CRUD-MYSQL.md).
+
 As falas abaixo são uma proposta para ensaio. Os nomes dos integrantes não
 representam autoria individual de commits. Priorizem abrir o código e executar
 a demonstração; não é necessário criar mais slides para explicar esta etapa.
