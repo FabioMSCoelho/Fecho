@@ -64,6 +64,20 @@ entrega; não se destina a um banco remoto de produção sem configuração adic
 
 ## Demonstração prática ao professor
 
+Esta etapa pede o CRUD funcionando localmente e o repositório atualizado.
+O roteiro de seminário em `APRESENTACAO.md` pertence à entrega anterior.
+
+| Operação | Opção no menu | Efeito no MySQL |
+| --- | --- | --- |
+| Create | `1 Cadastrar` | `INSERT`, com ID gerado pelo banco |
+| Read | `2 Listar` / `3 Buscar por ID` | `SELECT`, com resultado convertido em `Categoria` |
+| Update | `4 Atualizar` | `UPDATE` do nome e da descrição pelo ID |
+| Delete | `5 Excluir` | `DELETE` pelo ID, após confirmação com `SIM` |
+
+O caminho dos dados é: `MenuCategorias` → `CategoriaService` →
+`ICrudCategorias` → `RepositorioCategoriasMySql` → `ConexaoMySql` → MySQL.
+O driver é MySqlConnector; esta implementação usa SQL parametrizado, sem ORM.
+
 1. Inicie o CRUD e cadastre uma categoria com nome único e descrição.
    Mostre o ID devolvido pelo banco.
 2. Liste as categorias e busque pelo ID.
@@ -101,10 +115,26 @@ bash scripts/fecho.sh demo         # demonstração anterior em memória
 Execute a integração em banco de teste: cria fixtures com nomes únicos e remove
 somente seus registros ao terminar. Verifica CRUD, novas conexões, UTF-8/NULL,
 unicidade, entrada SQL literal, validação, FK, ID ausente, credenciais inválidas
-e servidor indisponível. Reinício do processo pode ser demonstrado pelo menu.
+e servidor indisponível. A suíte inicia processos independentes para confirmar
+que cadastro, atualização e exclusão são persistentes: não compartilham objetos
+em memória nem o pool de conexões do processo principal.
+O resultado esperado é **23/23 verificações de integração aprovadas**.
 A CI também sobe um MySQL real. `dotnet test` não executa os verificadores console.
 
+Na revisão local de 04/11/2026, passaram os 41 cenários de domínio, as 23
+verificações de integração e 10 verificações adicionais do menu, com entrada
+por terminal e reinício entre operações. A compilação passou sem avisos ou erros.
+Os testes usaram um banco separado, com o esquema completo da Entrega 4.
+
 ## GitHub e colaboração
+
+- Repositório da entrega: [FabioMSCoelho/Fecho](https://github.com/FabioMSCoelho/Fecho).
+- `feature/crud-categorias-mysql`: preserva o commit local original da implementação.
+- `feature/validacao-crud-mysql`: acrescenta a comprovação de persistência entre processos.
+- `docs/entrega-crud`: atualiza o roteiro prático, o README e a documentação da sprint.
+
+O commit original do CRUD foi mantido; os ajustes de validação e documentação
+foram registrados separadamente e integrados à `main` com commits de merge.
 
 Veja `git diff` e execute as verificações antes de commitar. Cada integrante deve
 registrar os próprios commits com a autoria real e revisar a contribuição do outro.

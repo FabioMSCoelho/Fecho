@@ -15,8 +15,9 @@ Os 41 testes originais validam memória; a suíte Fecho.Integracao valida MySQL 
 | `matches` | `Match` | `Usuario1`, `Usuario2`, `Objeto1` e `Objeto2` |
 | `trocas` | `Troca` | `Match.Id` → `match_id`, data e observação |
 
-Os nomes dos enums C# seguem os valores dos enums do SQL. Os IDs são inteiros
-gerados pelos repositórios em memória; na integração real, o MySQL deverá gerá-los.
+Os nomes dos enums C# seguem os valores dos enums do SQL. Os IDs são inteiros.
+No CRUD persistente de categorias são gerados pelo MySQL; na demonstração
+anterior de negociação são gerados pelos repositórios em memória.
 Os horários da aplicação usam UTC. Valor estimado é `decimal?`, não `double`.
 
 As restrições de unicidade do SQL foram refletidas nos repositórios de usuários,

@@ -168,13 +168,23 @@ Não se usa `MAX(id)+1`. Cada escrita do CRUD é uma única instrução SQL atô
 FKs e a collation do MySQL controlam vínculos e unicidade. O console não contém SQL.
 Leia [CRUD-MYSQL.md](CRUD-MYSQL.md) para execução e demonstração.
 
+`SELECT` reconstrói instâncias de `Categoria` a partir das linhas do banco.
+A listagem utiliza `List<Categoria>` e é devolvida como coleção somente de leitura.
+Nome e descrição são parâmetros dos comandos SQL, inclusive quando contêm aspas.
+A exclusão é física e requer confirmação no menu; categorias vinculadas a objetos
+ou desejos são protegidas pelas chaves estrangeiras do esquema original.
+
+A integração contém 23 verificações. Três delas iniciam processos independentes
+para recuperar o registro após INSERT, UPDATE e DELETE, comprovando que o estado
+consultado está no MySQL e não em uma coleção compartilhada pelo teste.
+
 ## Limites da demonstração anterior e próxima integração
 
 A demonstração anterior de negociação é monoprocesso e sequencial, com dados voláteis. Não há garantia de
 concorrência, transações ou durabilidade. A conclusão valida os dados antes de
 alterar estados; isso não substitui uma transação de banco.
 
-Um adaptador MySQL precisará implementar gravação e reidratação das entidades,
+Para as demais entidades, um adaptador MySQL precisará implementar gravação e reidratação,
 atualização dos estados e interesses, IDs gerados pelo banco, chaves estrangeiras,
 tratamento de violações de unicidade e uma transação para concluir/cancelar matches.
 O contrato de repositório atual cobre as operações desta etapa em memória e
