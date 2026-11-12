@@ -32,6 +32,11 @@ jobs:
         run: |
           docker compose up -d --wait
           dotnet tests/Fecho.Integracao/bin/Release/net10.0/Fecho.Integracao.dll
+      - name: Validar preenchimento e ampliacao dos exemplos
+        env:
+          FECHO_TEST_DEMO: '1'
+          FECHO_DEMO_PASSWORD: fecho-demo-ci-local-only
+        run: dotnet tests/Fecho.Web.Testes/bin/Release/net10.0/Fecho.Web.Testes.dll --demo
       - name: Validar MVP Web e regras de acesso
         run: bash scripts/validar-web.sh --no-build
       - name: Parar banco de teste

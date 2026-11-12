@@ -5,11 +5,12 @@ using Fecho.Infraestrutura.MySql;
 using Fecho.Web.Infraestrutura;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Fecho.Web.Controllers;
 
 [Authorize]
-public sealed class NegociacaoController(NegociacaoPersistenteService negociacao) : Controller
+public sealed class NegociacaoController(NegociacaoPersistenteService negociacao, IFileVersionProvider versoes) : Controller
 {
     private int UsuarioId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -34,8 +35,8 @@ public sealed class NegociacaoController(NegociacaoPersistenteService negociacao
                     match = match is null ? null : new
                     {
                         id = match.Registro.Id, pessoa = match.OutroObjeto.Proprietario.Nome,
-                        seuObjeto = new { nome = match.SeuObjeto.Nome, imagem = Apresentacao.Imagem(match.SeuObjeto) },
-                        outroObjeto = new { nome = match.OutroObjeto.Nome, imagem = Apresentacao.Imagem(match.OutroObjeto) }
+                        seuObjeto = new { nome = match.SeuObjeto.Nome, imagem = versoes.AddFileVersionToPath(Request.PathBase, Apresentacao.Imagem(match.SeuObjeto)) },
+                        outroObjeto = new { nome = match.OutroObjeto.Nome, imagem = versoes.AddFileVersionToPath(Request.PathBase, Apresentacao.Imagem(match.OutroObjeto)) }
                     }
                 });
             }

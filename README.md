@@ -25,6 +25,22 @@ As contas de demonstração são:
 - `bruno.demo@fecho.local`
 - `clara.demo@fecho.local`
 
+O conjunto de demonstração contém **20 objetos e 9 desejos**: Ana tem 7 objetos,
+Bruno tem 7 e Clara tem 6. São cinco categorias, três cidades, quatro estados de
+conservação e estimativas entre R$ 55 e R$ 650. As ilustrações usam a mesma paleta
+roxa e rosa da interface.
+
+Para ampliar um banco que já foi preparado, execute:
+
+```sh
+bash scripts/fecho.sh seed
+```
+
+O comando acrescenta somente os exemplos e desejos faltantes. Fotos enviadas,
+editações, senhas, avaliações, matches e trocas existentes são preservados.
+As ilustrações antigas são atualizadas pelos próprios arquivos SVG, sem trocar
+as fotos cadastradas. Curtidas e matches ficam para a demonstração ao vivo.
+
 A senha está na chave **`FECHO_DEMO_PASSWORD` do seu `.env`**. Contas de exemplo
 já existentes mantêm a senha anterior. Você também pode criar uma conta pela tela.
 Para preparar somente o banco, use `bash scripts/preparar-local.sh` sem `--demo`.
@@ -103,6 +119,9 @@ bash scripts/validar-web.sh       # inicia servidor isolado na porta 5071 e vali
 
 As suítes que usam banco devem apontar para um **banco de teste**, com o esquema
 completo. Criam registros com nomes únicos e removem apenas suas próprias fixtures.
+O preenchimento possui ainda 13 verificações em banco isolado, executadas no CI,
+cobrindo ampliação, repetição e preservação de registros.
+
 A suíte Web verifica 52 cenários HTTP, incluindo acessos indevidos, CSRF, uploads,
 recomendações, interesses simultâneos, conclusão concorrente e revogação de sessões.
 `dotnet test` não executa esses verificadores por console.

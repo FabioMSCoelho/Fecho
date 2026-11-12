@@ -12,7 +12,7 @@
             <div class="swipe-column">
                 <div class="swipe-stack">
                     <article class="swipe-card" tabindex="0" data-swipe-card data-object-id="@objeto.Id" aria-label="@objeto.Nome" aria-describedby="swipe-instructions">
-                        <img class="swipe-picture" src="@Apresentacao.Imagem(objeto)" alt="@objeto.Nome" width="720" height="680" fetchpriority="high" draggable="false" />
+                        <img asp-append-version="true" class="swipe-picture" src="@Apresentacao.Imagem(objeto)" alt="@objeto.Nome" width="720" height="680" fetchpriority="high" draggable="false" />
                         <div class="swipe-badges"><span class="swipe-category">@objeto.Categoria.Nome</span><span>@Apresentacao.Estado(objeto.EstadoConservacao)</span></div>
                         <span class="swipe-stamp swipe-stamp-like" aria-hidden="true">CURTI</span><span class="swipe-stamp swipe-stamp-pass" aria-hidden="true">PASSEI</span>
                         <div class="swipe-caption"><span>SEU PRÓXIMO ACHADO?</span><strong>@objeto.Nome</strong><span><svg class="icon"><use href="#i-local" /></svg>@(objeto.Proprietario.Cidade ?? "Cidade não informada")</span></div>

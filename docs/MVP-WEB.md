@@ -81,6 +81,46 @@ ter usuários e senhas diferentes dos configurados para o contêiner. Confira ta
 variáveis `FECHO_DB_*` exportadas no terminal, pois elas prevalecem sobre o `.env`.
 Não apague o volume para resolver um conflito de porta.
 
+## Conjunto de dados da demonstração
+
+O comando `seed` prepara 20 objetos e 9 desejos, com as seguintes contas:
+
+| Conta | Objetos | Desejos por categoria |
+| --- | --- | --- |
+| Ana Martins | 7 | Violão, fone e planta |
+| Bruno Costa | 7 | Câmera, bicicleta e livro |
+| Clara Almeida | 6 | Teclado, quadrinhos e luminária |
+
+Os objetos incluem câmera, violão, bicicleta, livros, fones e planta, além de
+leitor digital, luminária, raquete, teclado, caixa de som, mochila, quadrinhos,
+skate, controle de videogame, kit de jardinagem, ukulele e livro de receitas.
+Há categorias, cidades, estados e estimativas diferentes para combinar filtros.
+As palavras dos desejos encontram objetos reais de outras contas.
+
+Em uma base com os oito exemplos anteriores, repetir `bash scripts/fecho.sh seed`
+acrescenta os doze novos objetos e os desejos faltantes. O preenchimento compara
+proprietário e nome normalizado para os objetos, e categoria e descrição
+normalizada para os desejos. Contas inativas são preservadas e não recebem novos
+dados. Registros editados, fotos enviadas, senhas, status e histórico permanecem.
+O total de registros pode ser maior caso vocês tenham cadastrado outros objetos.
+
+As ilustrações compartilham a paleta roxa e rosa do site, incluindo os SVGs usados
+pelos registros antigos e a imagem padrão para objetos sem foto. As URLs nas
+páginas e no aviso de match incluem uma versão do arquivo para atualizar o cache.
+Fotos pessoais enviadas para `/imagens/` e imagens externas são preservadas.
+
+Nenhum interesse ou match é criado automaticamente. Reservem algumas escolhas
+para a apresentação. Se os exemplos antigos já foram trocados ou avaliados, usem
+os novos: Ana pode curtir o ukulele de Clara, e Clara pode curtir o teclado de Ana
+para demonstrar reciprocidade. Repetir a preparação mantém as escolhas anteriores.
+
+A validação automática do preenchimento está em
+`tests/Fecho.Web.Testes/DemonstracaoPersistente.cs`. São 13 verificações contra um
+MySQL isolado e inicialmente sem contas de demonstração. O modo `--demo` do
+executável de testes exige `FECHO_TEST_DEMO=1`; o CI configura esse ambiente,
+verifica a expansão da base antiga e a preservação de dados e credenciais. Esse
+modo é exclusivo do banco de testes, pois simula edições, trocas e conta inativa.
+
 ## Descobrir com cards
 
 A tela segue o fluxo da página 6 do wireframe: um objeto por vez, com foto grande,
