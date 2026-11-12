@@ -60,11 +60,17 @@ até 15 minutos: **[docs/MVP-WEB.md](docs/MVP-WEB.md)**.
 | --- | --- |
 | Conta e perfil | Cadastro, login, logout, edição do próprio perfil e alteração de senha |
 | Meus objetos | Cadastrar, consultar, editar e excluir os próprios objetos; upload PNG/JPEG/WebP |
-| Explorar | Busca sem diferenciar acentos, filtros por categoria, cidade, conservação e estimativa |
-| Ordenação e paginação | Merge sort por nome, valor ou data; páginas com até nove objetos |
+| Descobrir | Um card por vez; arraste à esquerda para passar e à direita para curtir, ou use botões e teclado |
+| Busca e filtros | Busca sem diferenciar acentos, filtros por categoria, cidade, conservação e estimativa |
+| Ordenação e interesses | Merge sort por nome, valor ou data; curtidos guardados em lista paginada |
 | Meus desejos | Desejos persistidos e recomendações que usam o critério de palavras-chave |
 | Interesses e matches | Like/dislike, reciprocidade entre objetos específicos e contato restrito aos participantes |
 | Conclusão | Transação registra a troca, marca os dois objetos como trocados e cancela matches concorrentes |
+
+Na tela **Descobrir**, curtir e passar gravam a preferência no MySQL e avançam para
+o próximo objeto sem recarregar a página inteira. Objetos avaliados não reaparecem
+na descoberta; os curtidos ficam em **Meus interesses**. Quando o like é recíproco,
+um aviso mostra os dois objetos e o acesso aos detalhes do match.
 
 Todos esses dados usam as **sete tabelas do MySQL original**. Reiniciar o
 servidor não recria os dados. As imagens enviadas e as chaves de sessão ficam em
@@ -97,7 +103,7 @@ bash scripts/validar-web.sh       # inicia servidor isolado na porta 5071 e vali
 
 As suítes que usam banco devem apontar para um **banco de teste**, com o esquema
 completo. Criam registros com nomes únicos e removem apenas suas próprias fixtures.
-A suíte Web verifica 41 cenários HTTP, incluindo acessos indevidos, CSRF, uploads,
+A suíte Web verifica 52 cenários HTTP, incluindo acessos indevidos, CSRF, uploads,
 recomendações, interesses simultâneos, conclusão concorrente e revogação de sessões.
 `dotnet test` não executa esses verificadores por console.
 O [workflow de CI](.github/workflows/ci.yml) compila e executa todas as suítes com
