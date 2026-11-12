@@ -8,6 +8,13 @@ using Fecho.Core.Servicos;
 using Fecho.Infraestrutura.MySql;
 using MySqlConnector;
 
+if (args.Contains("--demo", StringComparer.Ordinal))
+{
+    try { await DemonstracaoPersistente.Executar(); }
+    catch (Exception ex) { Console.Error.WriteLine(ex.Message); Environment.ExitCode = 1; }
+    return;
+}
+
 // Somente contra um servidor e banco de teste. As fixtures têm nomes únicos e são removidas no finally.
 var endereco = Environment.GetEnvironmentVariable("FECHO_TEST_WEB_URL") ?? "http://127.0.0.1:5071";
 var conexao = ConexaoMySql.DoAmbiente();
