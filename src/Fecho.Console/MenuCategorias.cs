@@ -17,6 +17,11 @@ public static class MenuCategorias
         }
         catch (ErroPersistencia ex) { Console.Error.WriteLine(ex.Message); return 1; }
 
+        return Executar(servico);
+    }
+
+    public static int Executar(CategoriaService servico)
+    {
         Console.WriteLine("FECHÔ — CRUD de categorias conectado ao MySQL");
         while (true)
         {

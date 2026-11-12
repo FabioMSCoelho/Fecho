@@ -12,11 +12,12 @@ public sealed class Usuario : EntidadeBase
     public string? Foto { get; }
     public string? Cidade { get; }
     public string? Descricao { get; }
-    public DateTime DataCadastro { get; } = DateTime.UtcNow;
-    public bool Ativo { get; private set; } = true;
+    public DateTime DataCadastro { get; }
+    public bool Ativo { get; private set; }
 
     public Usuario(int id, string nome, string email, SenhaProtegida senha, string telefone,
-        string? cidade = null, string? foto = null, string? descricao = null) : base(id)
+        string? cidade = null, string? foto = null, string? descricao = null,
+        DateTime? dataCadastro = null, bool ativo = true) : base(id)
     {
         Nome = Validacao.Texto(nome, nameof(nome), 100);
         Email = Validacao.Texto(email, nameof(email), 150).ToLowerInvariant();
@@ -29,8 +30,13 @@ public sealed class Usuario : EntidadeBase
         Cidade = Validacao.Opcional(cidade, nameof(cidade), 100);
         Foto = Validacao.Opcional(foto, nameof(foto), 255);
         Descricao = Validacao.Opcional(descricao, nameof(descricao), 500);
+        DataCadastro = dataCadastro ?? DateTime.UtcNow;
+        Ativo = ativo;
     }
 
+    public bool ConferirSenha(string? senha) => Senha.Confere(senha);
+    public string IdentificadorCredencial() => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+        System.Text.Encoding.UTF8.GetBytes(Senha.ParaPersistencia())));
     public void Desativar() => Ativo = false;
     public override string Resumir() => $"Usuário #{Id}: {Nome}";
 }

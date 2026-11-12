@@ -8,7 +8,7 @@ Console.OutputEncoding = Encoding.UTF8;
 if (args.Length > 0)
 {
     if (args is ["--crud"])
-        Environment.ExitCode = Fecho.ConsoleApp.MenuCategorias.Executar();
+        Environment.ExitCode = Fecho.ConsoleApp.MenuCrud.Executar();
     else
     {
         Console.Error.WriteLine("Uso: Fecho.Console [--crud]");

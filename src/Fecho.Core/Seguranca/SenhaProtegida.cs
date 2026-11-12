@@ -22,7 +22,28 @@ public sealed class SenhaProtegida
     public bool Confere(string? senha) => senha is { Length: >= 8 and <= 128 }
         && CryptographicOperations.FixedTimeEquals(_hash, Derivar(senha, _salt));
 
-    // Cabe no campo usuarios.senha VARCHAR(255); destinado ao adaptador de persistência futuro.
+    /// <summary>Reconstitui o hash existente sem conhecer nem recalcular a senha original.</summary>
+    public static SenhaProtegida DaPersistencia(string valor)
+    {
+        if (string.IsNullOrEmpty(valor)) throw new ArgumentException("Hash de senha inválido.", nameof(valor));
+        var partes = valor.Split('$');
+        if (partes.Length != 4 || partes[0] != "PBKDF2-SHA256" || partes[1] != "600000")
+            throw new ArgumentException("Formato de hash de senha não suportado.", nameof(valor));
+        try
+        {
+            var salt = Convert.FromBase64String(partes[2]);
+            var hash = Convert.FromBase64String(partes[3]);
+            if (salt.Length != 16 || hash.Length != 32)
+                throw new ArgumentException("Hash de senha inválido.", nameof(valor));
+            return new SenhaProtegida(salt, hash);
+        }
+        catch (FormatException)
+        {
+            throw new ArgumentException("Hash de senha inválido.", nameof(valor));
+        }
+    }
+
+    // Cabe no campo usuarios.senha VARCHAR(255).
     public string ParaPersistencia() =>
         $"PBKDF2-SHA256${Iteracoes}${Convert.ToBase64String(_salt)}${Convert.ToBase64String(_hash)}";
 

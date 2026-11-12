@@ -10,11 +10,17 @@ var app = new CategoriaService(new RepositorioCategoriasMySql(conexao));
 // Modo interno da suíte: o processo secundário só consulta, sem criar fixtures.
 if (args.Length > 0)
 {
-    if (args is ["--consultar-id", var texto] && int.TryParse(texto, out var id) && id > 0)
+    if (args is ["--consultar", var entidade, var texto] && int.TryParse(texto, out var id) && id > 0
+        && entidade is "categorias" or "usuarios" or "objetos")
     {
-        var categoria = app.Buscar(id);
-        if (categoria is null) Environment.ExitCode = 3;
-        else Console.WriteLine(categoria.Nome);
+        var nome = entidade switch
+        {
+            "usuarios" => new RepositorioUsuariosMySql(conexao).Buscar(id)?.Nome,
+            "objetos" => new RepositorioObjetosMySql(conexao).Buscar(id)?.Nome,
+            _ => app.Buscar(id)?.Nome
+        };
+        if (nome is null) Environment.ExitCode = 3;
+        else Console.WriteLine(nome);
     }
     else Environment.ExitCode = 2;
     return;
@@ -61,16 +67,10 @@ try
     try { app.Atualizar(c.Id, new string('x', 51)); throw new Exception("Validação não executou"); }
     catch (ArgumentException) { Exigir(true, "Limite de tamanho é validado"); }
 
-    using (var db = conexao.Abrir())
-    {
-        using var usuario = new MySqlCommand("INSERT INTO usuarios(nome,email,senha,telefone) VALUES (@nome,@email,'fixture-sem-login','11999990000')", db);
-        usuario.Parameters.AddWithValue("@nome", prefixo);
-        usuario.Parameters.AddWithValue("@email", prefixo + "@example.com");
-        usuario.ExecuteNonQuery(); usuarioId = checked((int)usuario.LastInsertedId);
-        using var objeto = new MySqlCommand("INSERT INTO objetos(usuario_id,categoria_id,nome,estado_conservacao) VALUES (@u,@c,'Fixture','BOM')", db);
-        objeto.Parameters.AddWithValue("@u", usuarioId); objeto.Parameters.AddWithValue("@c", c.Id);
-        objeto.ExecuteNonQuery(); objetoId = checked((int)objeto.LastInsertedId);
-    }
+    var usuarios = new RepositorioUsuariosMySql(conexao);
+    usuarioId = new UsuarioService(usuarios).Cadastrar(prefixo, prefixo + "@example.com", "Fixture@2026", "11999990000").Id;
+    objetoId = new ObjetoService(new RepositorioObjetosMySql(conexao), usuarios, new RepositorioCategoriasMySql(conexao))
+        .Cadastrar(usuarioId.Value, c.Id, "Fixture", Fecho.Core.Enums.EstadoConservacao.BOM).Id;
     Falha(() => app.Excluir(c.Id), "vinculada", "DELETE protege categoria referenciada por FK");
     Exigir(app.Buscar(c.Id) is not null, "DELETE rejeitado preserva categoria");
     Exigir(app.Excluir(segunda.Id), "DELETE remove registro sem vínculos");
@@ -83,6 +83,7 @@ try
     Falha(() => new ConexaoMySql(opcoes.ConnectionString).Verificar(), "acesso negado", "Credenciais inválidas têm mensagem segura");
     opcoes.Server = "127.0.0.1"; opcoes.Port = 1; opcoes.ConnectionTimeout = 1;
     Falha(() => new ConexaoMySql(opcoes.ConnectionString).Verificar(), "confira servidor", "Servidor indisponível tem mensagem segura");
+    CadastrosPersistentes.Verificar(conexao, Exigir, Falha);
     Console.WriteLine($"{aprovados}/{aprovados} verificações de integração aprovadas.");
 }
 catch (Exception ex)

@@ -4,7 +4,8 @@ using MySqlConnector;
 
 namespace Fecho.Infraestrutura.MySql;
 
-public sealed class RepositorioCategoriasMySql(ConexaoMySql conexoes) : ICrudCategorias
+public sealed class RepositorioCategoriasMySql(ConexaoMySql conexoes)
+    : RepositorioMySql(conexoes, "categoria"), ICrudCategorias
 {
     public Categoria Inserir(string nome, string? descricao)
     {
@@ -53,13 +54,6 @@ public sealed class RepositorioCategoriasMySql(ConexaoMySql conexoes) : ICrudCat
         cmd.Parameters.AddWithValue("@id", id);
         return cmd.ExecuteNonQuery() > 0;
     });
-
-    private T Executar<T>(Func<MySqlConnection, T> operacao)
-    {
-        using var conexao = conexoes.Abrir();
-        try { return operacao(conexao); }
-        catch (MySqlException ex) { throw ConexaoMySql.Traduzir(ex); }
-    }
 
     private static void Preencher(MySqlCommand cmd, Categoria dados)
     {
