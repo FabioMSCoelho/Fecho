@@ -61,6 +61,26 @@ escolha outra `FECHO_DB_PORT` no `.env` antes de subir um novo container.
 Senhas e scripts de inicialização do Compose só configuram automaticamente um
 volume vazio; mudar o `.env` não altera a senha de um usuário MySQL já criado.
 
+### Erro de porta ou acesso negado na preparação
+
+`address already in use` indica que outro serviço ocupa a porta do banco.
+Para manter o MySQL instalado no computador e usar o Docker para o Fechô, edite
+somente a porta no `.env`, preservando as senhas e demais configurações:
+
+```ini
+FECHO_DB_PORT=3307
+```
+
+Escolha uma porta livre e execute `bash scripts/preparar-local.sh --demo` novamente.
+A porta interna do contêiner continua sendo 3306; a aplicação usa a porta publicada
+no `.env`. O site continua em **http://localhost:5070**. O volume existente é reutilizado.
+
+Se o contêiner estiver saudável, mas a aplicação informar “Acesso negado”, confira
+se ela está conectando ao mesmo MySQL. Um servidor instalado na porta 3306 pode
+ter usuários e senhas diferentes dos configurados para o contêiner. Confira também
+variáveis `FECHO_DB_*` exportadas no terminal, pois elas prevalecem sobre o `.env`.
+Não apague o volume para resolver um conflito de porta.
+
 ## Telas e caminho dos dados
 
 | Tela | Endereço | Persistência |

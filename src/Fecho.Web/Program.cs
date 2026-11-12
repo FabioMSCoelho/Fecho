@@ -76,8 +76,17 @@ builder.Services.AddRateLimiter(o =>
 var app = builder.Build();
 if (args.Contains("--seed-demo", StringComparer.Ordinal))
 {
-    using var escopo = app.Services.CreateScope();
-    PopularDemonstracao.Executar(escopo.ServiceProvider);
+    try
+    {
+        using var escopo = app.Services.CreateScope();
+        PopularDemonstracao.Executar(escopo.ServiceProvider);
+    }
+    catch (Exception erro) when (erro is ErroPersistencia or ArgumentException)
+    {
+        Console.Error.WriteLine($"Não foi possível preparar a demonstração: {erro.Message}");
+        Console.Error.WriteLine("Confira FECHO_DB_* no .env e no terminal. A porta deve apontar para o MySQL preparado para o Fechô.");
+        Environment.ExitCode = 1;
+    }
     return;
 }
 // A ramificação de erro não repete autenticação ou consultas: funciona também

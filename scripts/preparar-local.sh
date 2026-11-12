@@ -33,9 +33,21 @@ if [[ "${1:-}" == "--demo" ]]; then
         printf '\nFECHO_DEMO_PASSWORD=%s\n' "$(openssl rand -hex 12)" >> .env
     fi
 fi
-docker compose up -d --wait
+if ! docker compose up -d --wait; then
+    printf '%s\n' \
+        'Não foi possível iniciar o MySQL do Docker.' \
+        'Se a porta 3306 estiver ocupada, escolha uma porta livre no .env, por exemplo FECHO_DB_PORT=3307, e execute novamente.' \
+        'O volume existente é mantido. Não use docker compose down -v para corrigir a conexão.' >&2
+    exit 1
+fi
 if [[ "${1:-}" == "--demo" ]]; then
-    bash scripts/fecho.sh seed
+    if ! bash scripts/fecho.sh seed; then
+        printf '%s\n' \
+            'O MySQL do Docker iniciou, mas a demonstração não foi preparada.' \
+            'Confira se FECHO_DB_HOST, FECHO_DB_PORT, FECHO_DB_NAME, FECHO_DB_USER e FECHO_DB_PASSWORD apontam para esse banco.' \
+            'Variáveis exportadas no terminal prevalecem sobre o .env. O volume existente foi mantido.' >&2
+        exit 1
+    fi
     printf '%s\n' 'As contas de exemplo usam a senha FECHO_DEMO_PASSWORD do seu .env.'
 fi
 printf '%s\n' 'Banco preparado. Execute: bash scripts/fecho.sh web' 'Abra: http://localhost:5070'

@@ -30,6 +30,10 @@ já existentes mantêm a senha anterior. Você também pode criar uma conta pela
 Para preparar somente o banco, use `bash scripts/preparar-local.sh` sem `--demo`.
 A primeira compilação/restauração e o primeiro download da imagem MySQL exigem Internet.
 
+Se já houver um MySQL na porta 3306 do computador, configure **`FECHO_DB_PORT=3307`**
+no `.env` (se essa porta estiver livre) e repita a preparação. O Docker continua
+usando o mesmo volume. Essa é a porta do banco; o site permanece em `localhost:5070`.
+
 ### Usar o MySQL da etapa anterior
 
 Copie `.env.example` para `.env`, preencha a conexão `FECHO_DB_*` do banco existente
