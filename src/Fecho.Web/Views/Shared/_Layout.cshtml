@@ -1,3 +1,4 @@
+@{ var controlador = ViewContext.RouteData.Values["controller"]?.ToString(); }
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,14 +16,14 @@
     <partial name="_Icones" />
     <header class="site-header">
         <div class="nav-shell">
-            <a class="brand" href="/" aria-label="Fechô, página inicial"><span class="brand-mark"><svg class="icon"><use href="#i-troca" /></svg></span>fechô<span class="brand-dot">.</span></a>
+            <a class="brand" href="/" aria-label="Fechô, página inicial"><img class="brand-logo" src="~/marca/fecho-logo.jpg" asp-append-version="true" width="52" height="52" alt="" /><span class="brand-name">Fechô<span class="brand-dot">.</span></span></a>
             <nav aria-label="Navegação principal">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Catalogo" ? "active" : "")" href="/">Descobrir</a>
+                <a class="nav-link @(controlador == "Catalogo" ? "active" : "")" aria-current="@(controlador == "Catalogo" ? "page" : null)" href="/">Descobrir</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a class="nav-link" href="/meus-objetos">Meus objetos</a>
-                    <a class="nav-link" href="/desejos">Meus desejos</a>
-                    <a class="nav-link" href="/matches"><svg class="icon"><use href="#i-match" /></svg> Matches</a>
+                    <a class="nav-link @(controlador == "Objetos" ? "active" : "")" aria-current="@(controlador == "Objetos" ? "page" : null)" href="/meus-objetos">Meus objetos</a>
+                    <a class="nav-link @(controlador == "Desejos" ? "active" : "")" aria-current="@(controlador == "Desejos" ? "page" : null)" href="/desejos">Meus desejos</a>
+                    <a class="nav-link @(controlador == "Negociacao" ? "active" : "")" aria-current="@(controlador == "Negociacao" ? "page" : null)" href="/matches"><svg class="icon"><use href="#i-match" /></svg> Matches</a>
                 }
                 else
                 { <a class="nav-link" href="/#como-funciona">Como funciona</a> }
@@ -45,7 +46,7 @@
         { <div class="notice error shell" role="alert"><span>@erro</span><button type="button" class="notice-close" data-dismiss aria-label="Fechar aviso">×</button></div> }
         @RenderBody()
     </main>
-    <footer class="site-footer shell"><a class="brand footer-brand" href="/">fechô<span class="brand-dot">.</span></a><p>Menos coisas paradas. Mais histórias compartilhadas.</p><span>Feito para circular.</span></footer>
+    <footer class="site-footer shell"><a class="brand footer-brand" href="/" aria-label="Fechô, página inicial"><img class="brand-logo" src="~/marca/fecho-logo.jpg" asp-append-version="true" width="38" height="38" alt="" /><span class="brand-name">Fechô<span class="brand-dot">.</span></span></a><p>Menos coisas paradas. Mais histórias compartilhadas.</p><span>Uma boa troca muda tudo.</span></footer>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
