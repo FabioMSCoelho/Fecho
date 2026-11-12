@@ -74,7 +74,8 @@ public sealed class FiltroCatalogo
 }
 
 public sealed record CatalogoPagina(FiltroCatalogo Filtro, ResultadoBusca Resultado,
-    IReadOnlyList<Categoria> Categorias, IReadOnlyDictionary<int, TipoInteresse> Interesses);
+    IReadOnlyList<Categoria> Categorias, IReadOnlyDictionary<int, TipoInteresse> Interesses,
+    bool PossuiObjetoDisponivel = false);
 public sealed record ObjetoDetalhe(Objeto Objeto, TipoInteresse? Interesse);
 public sealed record ObjetoEdicao(ObjetoForm Form, IReadOnlyList<Categoria> Categorias, Objeto? Atual = null);
 public sealed class DesejoForm

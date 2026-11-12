@@ -81,11 +81,35 @@ ter usuários e senhas diferentes dos configurados para o contêiner. Confira ta
 variáveis `FECHO_DB_*` exportadas no terminal, pois elas prevalecem sobre o `.env`.
 Não apague o volume para resolver um conflito de porta.
 
+## Descobrir com cards
+
+A tela segue o fluxo da página 6 do wireframe: um objeto por vez, com foto grande,
+descrição, conservação, estimativa e proprietário. Em celular, os detalhes ficam
+abaixo do card. Arraste para a esquerda para passar (`DISLIKE`) ou para a direita
+para curtir (`LIKE`). Há também botões rotulados e setas do teclado. Movimentos
+verticais continuam rolando a página; arrastos curtos não registram escolhas.
+
+A ação usa POST com token antifalsificação. O próximo card só aparece após a
+confirmação do MySQL. Falhas exibem uma mensagem e permitem recarregar os objetos.
+Sem JavaScript, os botões continuam funcionando por POST e redirecionamento.
+É necessário entrar e ter um objeto disponível para participar das trocas.
+
+Objetos curtidos e passados não reaparecem ao atualizar a descoberta. Os curtidos
+continuam acessíveis em Meus interesses, onde é possível retirar o interesse.
+Os filtros e a ordenação permanecem ao avançar. Ao terminar, a tela oferece ampliar
+a busca e ver os interesses. Um like recíproco abre um aviso de match com os dois
+objetos reais; telefone e contato continuam restritos aos detalhes do match.
+
+Na demonstração, mostre um arrasto curto, um swipe para passar e outro para curtir.
+Depois entre com a outra conta e curta um objeto do primeiro usuário para mostrar
+o aviso de match e o contato liberado.
+
 ## Telas e caminho dos dados
 
 | Tela | Endereço | Persistência |
 | --- | --- | --- |
-| Explorar | `/` | Objetos, categorias, proprietários e preferências do usuário |
+| Descobrir | `/` | Um card por vez; LIKE/DISLIKE persistidos e avanço ao próximo objeto não avaliado |
+| Meus interesses | `/?Curtidos=true` | Lista paginada dos objetos curtidos |
 | Criar conta / entrar | `/conta/cadastrar`, `/conta/entrar` | Usuário e hash PBKDF2; sessão por cookie protegido |
 | Perfil / senha | `/conta/perfil`, `/conta/senha` | Atualização dos próprios dados e do hash |
 | Meus objetos | `/meus-objetos` | Consulta dos objetos do usuário autenticado |
@@ -152,6 +176,10 @@ reconstruídos do MySQL; o resultado alimenta os cards da página.
 5. Uma `List<Objeto>` acumula os resultados. Um array auxiliar permite executar
    **merge sort**, dividindo e intercalando as partes ordenadas.
 6. Somente após ordenar, a lista é paginada em grupos de até nove objetos.
+   Na descoberta, a tela exibe apenas o primeiro objeto ainda não avaliado. Depois
+   de cada escolha, refaz a busca excluindo os IDs avaliados com um `HashSet<int>`
+   e retoma a primeira página. Isso evita pular itens ao reduzir a lista.
+   Meus interesses usa a paginação completa para consultar os curtidos.
 
 A busca faz um percurso sobre os objetos; o trabalho textual também depende do
 número de palavras e do tamanho dos textos. A ordenação faz O(n log n)
@@ -206,7 +234,7 @@ bash scripts/validar-web.sh
 
 A suíte de domínio cobre 51 cenários, incluindo normalização, ordenação, paginação,
 deduplicação, configuração local e regras anteriores. A integração cobre 68
-verificações dos CRUDs. A suíte Web cobre 41 verificações HTTP com três sessões,
+verificações dos CRUDs. A suíte Web cobre 52 verificações HTTP com três sessões,
 incluindo CSRF, acesso indevido, upload, buscas, recomendações, matches e conclusão
 simultânea. Os testes de banco criam e removem somente fixtures próprias.
 

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Fecho.Core.Enums;
 using Fecho.Core.Servicos;
 using Fecho.Infraestrutura.MySql;
+using Fecho.Web.Infraestrutura;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,15 +16,36 @@ public sealed class NegociacaoController(NegociacaoPersistenteService negociacao
     [HttpPost("objetos/{id:int:min(1)}/interesse")]
     public IActionResult Interesse(int id, TipoInteresse? tipo, string? retorno)
     {
-        if (!ModelState.IsValid || !tipo.HasValue || !Enum.IsDefined(tipo.Value)) return BadRequest();
+        var json = Request.Headers.Accept.ToString().Contains("application/json", StringComparison.OrdinalIgnoreCase);
+        if (!ModelState.IsValid || !tipo.HasValue || !Enum.IsDefined(tipo.Value))
+            return BadRequest(new { mensagem = "Escolha curtir ou passar para avaliar o objeto." });
         try
         {
             var novos = negociacao.Avaliar(UsuarioId, id, tipo.Value);
-            TempData["Sucesso"] = novos > 0 ? "Deu match! Vocês já podem combinar a troca." : tipo == TipoInteresse.LIKE
+            var mensagem = novos > 0 ? "Deu match! Vocês já podem combinar a troca." : tipo == TipoInteresse.LIKE
                 ? "Interesse registrado. Se a pessoa também curtir um objeto seu, é match!" : "Preferência atualizada.";
+            if (json)
+            {
+                var match = novos > 0 ? negociacao.ListarMatches(UsuarioId)
+                    .FirstOrDefault(m => m.Registro.Status == StatusMatch.ATIVO && m.OutroObjeto.Id == id) : null;
+                return Json(new
+                {
+                    mensagem,
+                    match = match is null ? null : new
+                    {
+                        id = match.Registro.Id, pessoa = match.OutroObjeto.Proprietario.Nome,
+                        seuObjeto = new { nome = match.SeuObjeto.Nome, imagem = Apresentacao.Imagem(match.SeuObjeto) },
+                        outroObjeto = new { nome = match.OutroObjeto.Nome, imagem = Apresentacao.Imagem(match.OutroObjeto) }
+                    }
+                });
+            }
+            TempData["Sucesso"] = mensagem;
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException or ErroPersistencia)
-        { TempData["Erro"] = ex.Message; }
+        {
+            if (json) return StatusCode(ex is ErroPersistencia ? 503 : 422, new { mensagem = ex.Message });
+            TempData["Erro"] = ex.Message;
+        }
         return !string.IsNullOrWhiteSpace(retorno) && Url.IsLocalUrl(retorno) ? LocalRedirect(retorno) : RedirectToAction("Index", "Catalogo");
     }
 

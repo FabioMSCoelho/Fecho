@@ -27,10 +27,12 @@ internal sealed partial class Navegador(string endereco) : IDisposable
         throw new Exception("Ciclo de redirecionamentos.");
     }
 
-    internal async Task<Resposta> Post(string caminho, Dictionary<string, string> dados, string paginaToken = "/meus-objetos", bool comToken = true)
+    internal async Task<Resposta> Post(string caminho, Dictionary<string, string> dados, string paginaToken = "/meus-objetos", bool comToken = true, bool json = false)
     {
         if (comToken) dados["__RequestVerificationToken"] = await Token(paginaToken);
-        using var resposta = await _http.PostAsync(caminho, new FormUrlEncodedContent(dados));
+        using var pedido = new HttpRequestMessage(HttpMethod.Post, caminho) { Content = new FormUrlEncodedContent(dados) };
+        if (json) pedido.Headers.Accept.ParseAdd("application/json");
+        using var resposta = await _http.SendAsync(pedido);
         return new Resposta((int)resposta.StatusCode, await resposta.Content.ReadAsStringAsync(), resposta.Headers.Location?.ToString());
     }
     internal async Task<Resposta> Upload(string caminho, Dictionary<string, string> dados, byte[] imagem)

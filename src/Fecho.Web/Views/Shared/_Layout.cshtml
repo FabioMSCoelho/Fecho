@@ -7,6 +7,7 @@
     <title>@(ViewData["Title"] ?? "Boas trocas, novas histórias") · Fechô</title>
     <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/descoberta.css" asp-append-version="true" />
     <script src="~/js/site.js" asp-append-version="true" defer></script>
 </head>
 <body>
@@ -16,7 +17,7 @@
         <div class="nav-shell">
             <a class="brand" href="/" aria-label="Fechô, página inicial"><span class="brand-mark"><svg class="icon"><use href="#i-troca" /></svg></span>fechô<span class="brand-dot">.</span></a>
             <nav aria-label="Navegação principal">
-                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Catalogo" ? "active" : "")" href="/">Explorar</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Catalogo" ? "active" : "")" href="/">Descobrir</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <a class="nav-link" href="/meus-objetos">Meus objetos</a>
@@ -45,5 +46,6 @@
         @RenderBody()
     </main>
     <footer class="site-footer shell"><a class="brand footer-brand" href="/">fechô<span class="brand-dot">.</span></a><p>Menos coisas paradas. Mais histórias compartilhadas.</p><span>Feito para circular.</span></footer>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
