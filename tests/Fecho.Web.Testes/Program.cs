@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using Fecho.Core.Enums;
 using Fecho.Core.Servicos;
 using Fecho.Infraestrutura.MySql;
@@ -69,6 +70,9 @@ try
     Exigir(proprioLike.Codigo == 302 && !negociacao.ListarInteresses(ids[0]).ContainsKey(objetoA), "Regra impede interesse no próprio objeto");
     var semObjeto = await b.Post($"/objetos/{objetoA}/interesse", new() { ["tipo"] = "LIKE" });
     Exigir(semObjeto.Codigo == 302 && negociacao.ListarInteresses(ids[1]).Count == 0, "Usuário sem objeto disponível não participa de trocas");
+    var semObjetoJson = await b.Post($"/objetos/{objetoA}/interesse", new() { ["tipo"] = "LIKE" }, json: true);
+    Exigir(semObjetoJson.Codigo == 422 && JsonDocument.Parse(semObjetoJson.Html).RootElement.GetProperty("mensagem").GetString()!.Length > 0,
+        "Descoberta informa regra de negócio em JSON sem avançar o card");
     var camposB = Objeto(" violão"); camposB["usuarioId"] = ids[0].ToString(); camposB["Form.ProprietarioId"] = ids[0].ToString();
     var objetoB = IdObjeto(await b.Post("/objetos/novo", camposB));
     Exigir(repoObjetos.Buscar(objetoB)?.Proprietario.Id == ids[1], "Dono do objeto vem da sessão, ignorando IDs forjados no formulário");
@@ -98,6 +102,8 @@ try
     var filtro = await anonimo.Get("/?Texto=" + Uri.EscapeDataString(prefixo + " VIOLAO"));
     Exigir(filtro.Codigo == 200 && WebUtility.HtmlDecode(filtro.Html).Contains(prefixo + " violão", StringComparison.Ordinal),
         "Busca Web encontra palavras sem diferenciar acentos ou caixa");
+    Exigir(Regex.Matches(filtro.Html, "data-swipe-card").Count == 1 && !filtro.Html.Contains("class=\"object-grid\"", StringComparison.Ordinal),
+        "Descobrir apresenta exatamente um card em vez de uma grade de objetos");
     var semResultado = await anonimo.Get("/?Texto=" + prefixo + "inexistente");
     Exigir(Regex.IsMatch(WebUtility.HtmlDecode(semResultado.Html), @"<strong>0</strong>\s*objetos disponíveis"), "Busca sem resultado exibe estado vazio");
     await a.Post("/desejos", new() { ["Form.Descricao"] = "violao", ["Form.CategoriaId"] = categoria.Id.ToString() });
@@ -106,10 +112,51 @@ try
     var publico = await anonimo.Get($"/objetos/{objetoB}");
     Exigir(!publico.Html.Contains("11987650002", StringComparison.Ordinal) && !publico.Html.Contains("PBKDF2", StringComparison.Ordinal),
         "Página pública não revela telefone nem hash de senha");
-    await a.Post($"/objetos/{objetoB}/interesse", new() { ["tipo"] = "LIKE" });
+
+    // Mais de uma página de resultados: cada avanço deve retomar o primeiro não avaliado.
+    var servicoObjetos = new ObjetoService(repoObjetos, repoUsuarios, categorias);
+    var fila = Enumerable.Range(0, 11).Select(i => servicoObjetos.Cadastrar(ids[2], categoria.Id,
+        prefixo + " fila" + i.ToString("D2"), EstadoConservacao.BOM)).ToArray();
+    var urlFila = "/?Texto=" + Uri.EscapeDataString(prefixo + " fila") + "&Ordem=Nome&Pagina=2";
+    var primeiro = await a.Get(urlFila);
+    Exigir(primeiro.Html.Contains($"data-object-id=\"{fila[0].Id}\"", StringComparison.Ordinal),
+        "Descoberta inicia no primeiro objeto mesmo com parâmetro antigo de paginação");
+    var semCsrf = await a.Post($"/objetos/{fila[0].Id}/interesse", new() { ["tipo"] = "DISLIKE" }, comToken: false, json: true);
+    Exigir(semCsrf.Codigo == 400 && !negociacao.ListarInteresses(ids[0]).ContainsKey(fila[0].Id), "Swipe sem CSRF não grava preferência");
+    var tipoInvalido = await a.Post($"/objetos/{fila[0].Id}/interesse", new() { ["tipo"] = "999" }, json: true);
+    Exigir(tipoInvalido.Codigo == 400 && !negociacao.ListarInteresses(ids[0]).ContainsKey(fila[0].Id), "Swipe rejeita tipo de avaliação inválido");
+    var curtida = await a.Post($"/objetos/{fila[0].Id}/interesse", new() { ["tipo"] = "LIKE", ["retorno"] = urlFila + "#achados" });
+    Exigir(curtida.Codigo == 302 && curtida.Localizacao == urlFila + "#achados", "Botões funcionam com redirecionamento mesmo sem JavaScript");
+    Exigir(!(await a.Get(urlFila)).Html.Contains($"data-object-id=\"{fila[0].Id}\"", StringComparison.Ordinal)
+        && (await a.Get("/?Curtidos=true&Texto=" + Uri.EscapeDataString(prefixo + " fila"))).Html.Contains($"href=\"/objetos/{fila[0].Id}\"", StringComparison.Ordinal),
+        "Objeto curtido sai da descoberta e permanece em Meus interesses");
+    await a.Post($"/objetos/{fila[0].Id}/interesse", new() { ["tipo"] = "DISLIKE" }, json: true);
+    var semPulos = true;
+    foreach (var item in fila.Skip(1))
+    {
+        var atual = await a.Get(urlFila);
+        semPulos &= Regex.Matches(atual.Html, "data-swipe-card").Count == 1
+            && atual.Html.Contains($"data-object-id=\"{item.Id}\"", StringComparison.Ordinal);
+        var passou = await a.Post($"/objetos/{item.Id}/interesse", new() { ["tipo"] = "DISLIKE" }, json: true);
+        semPulos &= passou.Codigo == 200 && negociacao.ListarInteresses(ids[0]).GetValueOrDefault(item.Id) == TipoInteresse.DISLIKE;
+    }
+    Exigir(semPulos, "Swipes percorrem onze objetos sem pular itens ao ultrapassar o tamanho da página");
+    var fim = await a.Get(urlFila);
+    Exigir(fim.Html.Contains("data-discovery-empty", StringComparison.Ordinal) && !fim.Html.Contains("data-swipe-card", StringComparison.Ordinal),
+        "Fim dos cards apresenta estado vazio e avaliações persistem após recarregar");
+
+    var likeJson = await a.Post($"/objetos/{objetoB}/interesse", new() { ["tipo"] = "LIKE" }, json: true);
+    Exigir(likeJson.Codigo == 200 && JsonDocument.Parse(likeJson.Html).RootElement.GetProperty("match").ValueKind == JsonValueKind.Null,
+        "Like unilateral retorna JSON sem inventar um match");
     Exigir(negociacao.ListarMatches(ids[0]).Count == 0, "Like unilateral não cria match");
-    await b.Post($"/objetos/{objetoA}/interesse", new() { ["tipo"] = "LIKE" });
+    var reciprocoJson = await b.Post($"/objetos/{objetoA}/interesse", new() { ["tipo"] = "LIKE" }, json: true);
     var match = negociacao.ListarMatches(ids[0]).Single();
+    var popup = JsonDocument.Parse(reciprocoJson.Html).RootElement.GetProperty("match");
+    Exigir(reciprocoJson.Codigo == 200 && popup.GetProperty("id").GetInt32() == match.Registro.Id
+        && popup.GetProperty("seuObjeto").GetProperty("nome").GetString() == repoObjetos.Buscar(objetoB)!.Nome
+        && popup.GetProperty("outroObjeto").GetProperty("nome").GetString() == repoObjetos.Buscar(objetoA)!.Nome
+        && !reciprocoJson.Html.Contains("11987650001", StringComparison.Ordinal),
+        "Like recíproco devolve os dois objetos reais para o aviso de match sem expor telefone");
     Exigir(match.Registro.Status == StatusMatch.ATIVO, "Likes recíprocos criam match persistente");
     var duplicacoes = await Task.WhenAll(
         b.Post($"/objetos/{objetoA}/interesse", new() { ["tipo"] = "LIKE" }),
