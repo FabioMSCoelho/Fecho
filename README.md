@@ -1,166 +1,139 @@
-# Fechô — CRUD MySQL e classes de domínio
+# Fechô — MVP Web de troca de objetos
 
-Projeto acadêmico de **Fábio Coelho e Giovana Almeida**. O Fechô conecta pessoas
-que desejam trocar objetos: duas curtidas recíprocas em objetos específicos geram
-um match e liberam o contato para combinar a troca.
+Projeto acadêmico de **Fábio Coelho e Giovana Almeida**, em C# / .NET 10,
+ASP.NET Core MVC e MySQL 8.4. Um objeto parado pode ser o próximo achado de
+alguém: dois interesses recíprocos geram um match e liberam o contato para a troca.
 
-O backend usa **C# / .NET 10** e preserva o [SQL original](database/fecho.sql).
-A entrega atual acrescenta persistência MySQL ao CRUD de categorias. As classes,
-a herança, o polimorfismo e a demonstração em memória da etapa anterior continuam disponíveis.
+## Executar localmente
 
-## Entrega atual: CRUD funcional no MySQL
-
-O console agora oferece cadastro, listagem, busca, atualização e exclusão de
-**categorias** no banco original. Acesso a dados separado em repositório,
-MySqlConnector 2.6.2, consultas parametrizadas e tratamento de falhas de conexão,
-duplicidade e vínculos por chave estrangeira.
-
-Siga [a preparação local e o roteiro para o professor](docs/CRUD-MYSQL.md).
-Com o MySQL preparado e as variáveis `FECHO_DB_*` exportadas:
+Pré-requisitos: **SDK .NET 10** e **Docker com Compose**. No Linux ou macOS,
+na raiz do repositório:
 
 ```sh
-bash scripts/fecho.sh crud
-bash scripts/fecho.sh integration
+bash scripts/preparar-local.sh --demo
+bash scripts/fecho.sh web
 ```
 
-A demonstração e os 41 testes da etapa anterior continuam disponíveis abaixo.
-O CRUD de categorias persiste em MySQL; o cenário de negociação permanece em memória.
+Abra **http://localhost:5070**. O primeiro comando cria um `.env` com senhas
+locais aleatórias se o arquivo ainda não existir, inicia o MySQL e prepara dados
+fictícios. Arquivos de configuração existentes são preservados; o banco não é
+apagado nem reimportado quando o volume já está inicializado.
 
-Esta entrega é demonstrada diretamente ao professor: cadastrar, consultar,
-reiniciar o programa, atualizar e excluir um registro. A suíte de integração
-executa **23 verificações em MySQL real**, incluindo leitura em processos separados.
+As contas de demonstração são:
 
-| Requisito da entrega | Implementação |
-| --- | --- |
-| Conexão e erros iniciais | [ConexaoMySql](src/Fecho.Infraestrutura/MySql/ConexaoMySql.cs) |
-| Inserir, listar, buscar, atualizar e excluir | [RepositorioCategoriasMySql](src/Fecho.Infraestrutura/MySql/RepositorioCategoriasMySql.cs) |
-| Separação de responsabilidades | [CategoriaService](src/Fecho.Core/Servicos/CategoriaService.cs), [ICrudCategorias](src/Fecho.Core/Contratos/ICrudCategorias.cs) e [MenuCategorias](src/Fecho.Console/MenuCategorias.cs) |
-| Persistência após encerrar o processo | [Suíte de integração](tests/Fecho.Integracao/Program.cs) e [consulta em outro processo](tests/Fecho.Integracao/ProcessoPersistencia.cs) |
-| Histórico e branches desta sprint | [Guia Git](docs/GIT.md) |
+- `ana.demo@fecho.local`
+- `bruno.demo@fecho.local`
+- `clara.demo@fecho.local`
 
-## SDK e execução em Linux ou macOS
+A senha está na chave **`FECHO_DEMO_PASSWORD` do seu `.env`**. Contas de exemplo
+já existentes mantêm a senha anterior. Você também pode criar uma conta pela tela.
+Para preparar somente o banco, use `bash scripts/preparar-local.sh` sem `--demo`.
+A primeira compilação/restauração e o primeiro download da imagem MySQL exigem Internet.
 
-Instale o **SDK .NET 10**, não apenas o runtime, pelo
-[site oficial da Microsoft](https://dotnet.microsoft.com/download/dotnet/10.0).
-O CRUD exige o preparo do MySQL e das variáveis descrito no roteiro acima.
-Para executar a demonstração anterior ou seus testes, na pasta do repositório:
+### Usar o MySQL da etapa anterior
 
-```sh
-bash scripts/fecho.sh demo
-bash scripts/fecho.sh test
-```
+Copie `.env.example` para `.env`, preencha a conexão `FECHO_DB_*` do banco existente
+e execute `bash scripts/fecho.sh web`. A aplicação lê esse arquivo automaticamente;
+variáveis já exportadas têm prioridade. **Não reimporte o SQL em um banco existente.**
+O esquema original em [database/fecho.sql](database/fecho.sql) foi preservado.
+O usuário da aplicação precisa de SELECT, INSERT, UPDATE e DELETE em `fecho.*`.
 
-O script também reconhece um SDK instalado localmente em `.tools/dotnet`.
-A primeira compilação restaura o driver MySqlConnector pelo NuGet. MySQL só é
-necessário para `crud` e `integration`; a demo anterior e seus testes usam memória.
+Em Windows/PowerShell, com o SDK e o MySQL preparados:
 
-## Executar em Windows ou diretamente pelo .NET
-
-No terminal, na raiz do projeto:
-
-```sh
-dotnet --version
+```powershell
 dotnet build Fecho.slnx --configuration Release --disable-build-servers -m:1
-dotnet src/Fecho.Console/bin/Release/net10.0/Fecho.Console.dll --crud
-dotnet tests/Fecho.Testes/bin/Release/net10.0/Fecho.Testes.dll
+Set-Location src/Fecho.Web
+dotnet bin/Release/net10.0/Fecho.Web.dll
 ```
 
-O arquivo `global.json` seleciona um SDK estável da série 10.0.
-Também é possível abrir `Fecho.slnx` em um editor compatível com esse SDK.
+Opcionalmente, defina `FECHO_DEMO_PASSWORD` no `.env` e execute o mesmo DLL com
+`--seed-demo` antes de iniciar o servidor. Instruções completas e roteiro de
+até 15 minutos: **[docs/MVP-WEB.md](docs/MVP-WEB.md)**.
 
-O comando `--crud` exige as variáveis `FECHO_DB_*` configuradas. Sem argumentos,
-o console executa a demonstração anterior de negociação em memória.
+## O que funciona no MVP
 
-## O que observar na demonstração anterior de POO
-
-1. Uma `List<EntidadeBase>` chama implementações diferentes de `Resumir()`.
-2. O mesmo serviço de descoberta recebe `PorCategoria` ou `PorPalavrasChave`.
-   No cenário demonstrado, são três cards no primeiro critério e um no segundo.
-3. Dois desejos compatíveis não repetem o card do violão, graças ao `HashSet`.
-4. Um like sozinho gera **zero matches**. A reciprocidade gera o match correto.
-5. Repetir o like mantém **um match e dois registros de interesse**.
-6. Os participantes recebem o contato; um terceiro tem o acesso recusado.
-7. Concluir a troca marca câmera e violão como `TROCADO` e cancela o match
-   concorrente da câmera. Os objetos que não foram trocados continuam disponíveis.
-
-Os nomes, e-mails e telefones da execução são fictícios. Os dados são recriados
-a cada execução e não ficam gravados depois que o processo termina.
-
-## Correspondência com a etapa anterior de POO
-
-| Critério | Onde demonstrar |
+| Fluxo | Comportamento |
 | --- | --- |
-| Herança de atributos e comportamento | [EntidadeBase](src/Fecho.Core/Entidades/EntidadeBase.cs), herdada pelas sete entidades |
-| Reutilização de armazenamento | [RepositorioMemoria](src/Fecho.Infraestrutura/Memoria/RepositorioMemoria.cs) e subclasses com validações próprias |
-| Polimorfismo nas regras | [CriterioCompatibilidade](src/Fecho.Core/Compatibilidade/CriterioCompatibilidade.cs) e [DescobertaService](src/Fecho.Core/Servicos/DescobertaService.cs) |
-| `List<T>` | Ordem dos cards e do histórico de matches |
-| `HashSet<T>` | Unicidade de cards, objetos avaliados e pares de objetos nos matches |
-| Regras do negócio | [TrocaService](src/Fecho.Core/Servicos/TrocaService.cs) |
-| Testes de comportamento | [41 cenários executáveis](tests/Fecho.Testes/Program.cs) |
-| Commits e branches | `git log --graph --oneline --all --decorate` e [guia Git](docs/GIT.md) |
-| Debate de até 10 minutos | [Roteiro com tempo e arquivos a abrir](docs/APRESENTACAO.md) |
+| Conta e perfil | Cadastro, login, logout, edição do próprio perfil e alteração de senha |
+| Meus objetos | Cadastrar, consultar, editar e excluir os próprios objetos; upload PNG/JPEG/WebP |
+| Explorar | Busca sem diferenciar acentos, filtros por categoria, cidade, conservação e estimativa |
+| Ordenação e paginação | Merge sort por nome, valor ou data; páginas com até nove objetos |
+| Meus desejos | Desejos persistidos e recomendações que usam o critério de palavras-chave |
+| Interesses e matches | Like/dislike, reciprocidade entre objetos específicos e contato restrito aos participantes |
+| Conclusão | Transação registra a troca, marca os dois objetos como trocados e cancela matches concorrentes |
+
+Todos esses dados usam as **sete tabelas do MySQL original**. Reiniciar o
+servidor não recria os dados. As imagens enviadas e as chaves de sessão ficam em
+`.tools/web`, fora do Git; mantenha essa pasta para preservar as imagens entre execuções.
+
+## Correspondência com a entrega
+
+| Requisito | Onde conferir |
+| --- | --- |
+| Interface Web integrada ao C# | [Controllers](src/Fecho.Web/Controllers), [views Razor](src/Fecho.Web/Views) e [Program.cs](src/Fecho.Web/Program.cs) |
+| Formulários e listagens com MySQL | [Repositórios MySQL](src/Fecho.Infraestrutura/MySql) e [serviços de domínio](src/Fecho.Core/Servicos) |
+| Algoritmos e estruturas de dados | [BuscaObjetos](src/Fecho.Core/Busca/BuscaObjetos.cs): busca linear, `List`, `HashSet`, `Dictionary` e merge sort |
+| Validação e autorização | Validação no servidor, e-mail único, proprietário vindo da sessão, CSRF e conferência de participação no match |
+| Consistência da negociação | [NegociacaoPersistenteService](src/Fecho.Core/Servicos/NegociacaoPersistenteService.cs) e [UnidadeNegociacaoMySql](src/Fecho.Infraestrutura/MySql/UnidadeNegociacaoMySql.cs) |
+| Demonstração de até 15 minutos | [Roteiro do MVP](docs/MVP-WEB.md) |
+
+O banco não define perfis Cliente/Administrador. As restrições Web são por
+**usuário autenticado, propriedade do objeto e participação no match**.
+O telefone só aparece ao titular do perfil e aos participantes autorizados;
+hashes e senhas não são exibidos nas listagens.
+
+## Testes
+
+```sh
+bash scripts/fecho.sh build
+bash scripts/fecho.sh test        # 51 cenários: domínio, configuração, busca e ordenação
+bash scripts/fecho.sh integration # 68 verificações dos CRUDs em MySQL real
+bash scripts/validar-web.sh       # inicia servidor isolado na porta 5071 e valida o fluxo Web
+```
+
+As suítes que usam banco devem apontar para um **banco de teste**, com o esquema
+completo. Criam registros com nomes únicos e removem apenas suas próprias fixtures.
+A suíte Web verifica 41 cenários HTTP, incluindo acessos indevidos, CSRF, uploads,
+recomendações, interesses simultâneos, conclusão concorrente e revogação de sessões.
+`dotnet test` não executa esses verificadores por console.
+O [workflow de CI](.github/workflows/ci.yml) compila e executa todas as suítes com
+um MySQL separado em pushes e pull requests.
 
 ## Organização
 
 ```text
-src/
-  Fecho.Core/             entidades, contratos, critérios e serviços de negócio
-  Fecho.Infraestrutura/  repositórios em memória e composição dos serviços
-  Fecho.Console/         demonstração reproduzível
-tests/Fecho.Testes/       verificador dos cenários de negócio
-database/                banco original e mapa entre tabelas e classes
-docs/                    arquitetura, apresentação e versionamento
-scripts/                 execução com o SDK global ou local
-.github/workflows/       compilação, testes, demo e integração MySQL no GitHub Actions
+src/Fecho.Core/             entidades, contratos, regras e algoritmos
+src/Fecho.Infraestrutura/  SQL parametrizado, repositórios e transações
+src/Fecho.Web/             controllers, formulários, views e arquivos visuais
+src/Fecho.Console/         CRUD local e demonstração anterior de POO
+tests/Fecho.Testes/        domínio, hashes e algoritmos
+tests/Fecho.Integracao/    persistência dos três CRUDs
+tests/Fecho.Web.Testes/    navegação HTTP e regras do MVP
+database/                 esquema original da equipe
+docs/                     arquitetura, roteiro e entregas anteriores
+scripts/                  preparação, execução e validação
 ```
 
-O Core não conhece o armazenamento concreto. A infraestrutura implementa
-`IRepositorio<T>` e o console monta as dependências com `AmbienteMemoria`.
-Veja as justificativas e os limites em [ARQUITETURA.md](docs/ARQUITETURA.md).
+O console anterior continua disponível: `bash scripts/fecho.sh crud` abre os
+cadastros locais e `bash scripts/fecho.sh demo` executa o cenário de POO em memória.
+A Web usa a persistência MySQL; a demonstração anterior continua independente.
 
-## Regras implementadas
+## Escopo e documentação
 
-- Exigir usuário ativo e pelo menos um objeto disponível para registrar interesse.
-- Impedir like/dislike no próprio objeto e em objetos já trocados.
-- Manter uma avaliação por usuário e objeto; mudar a avaliação atualiza o registro.
-- Gerar match apenas quando há dois likes recíprocos para os objetos envolvidos.
-- Liberar contato apenas a participantes de match ativo ou concluído.
-- Revogar contato de match cancelado e bloquear acesso por terceiros.
-- Registrar uma única conclusão, indisponibilizar os dois objetos e cancelar
-  outros matches ativos que compartilhem qualquer um deles.
-- Proteger unicidade de e-mail, categoria e par usuário/objeto nos repositórios.
+Este MVP roda localmente. Oferece uma imagem por objeto, conforme o campo
+`imagem` do esquema original; não inclui chat interno, pagamentos, OAuth,
+avaliações ou confirmação dupla de entrega. Os participantes combinam a troca
+pelo contato liberado após o match. Qualquer participante pode registrar a conclusão.
 
-## Testes e automação
+As telas seguem os fluxos registrados nos documentos anteriores. Os PDFs dos
+wireframes não estavam mais acessíveis nos caminhos fornecidos; a conferência
+visual com o material original permanece pendente.
 
-O projeto `Fecho.Testes` é um verificador por console, sem framework externo:
-cada cenário faz verificações e lança exceção se o resultado estiver incorreto.
-O processo retorna **0** se todos passam e **1** se algum falha. Use os comandos
-acima; `dotnet test` não executa essa suíte.
+- [Execução, demonstração e algoritmo](docs/MVP-WEB.md)
+- [Escolhas arquiteturais](docs/ARQUITETURA.md)
+- [Histórico e trabalho em equipe](docs/GIT.md)
+- [Entrega anterior: CRUD no console](docs/CRUD-MYSQL.md)
+- [Entrega anterior: POO](docs/APRESENTACAO.md)
 
-O resultado esperado da suíte de domínio é `41/41 cenários aprovados`.
-Com o banco preparado, a integração retorna `23/23 verificações de integração aprovadas`.
-O workflow do GitHub compila, executa as duas suítes, roda a demonstração e inicia
-um MySQL separado para validar a persistência em pushes e pull requests.
-
-## Escopo desta etapa
-
-O banco original agora é usado no CRUD de categorias. Os demais fluxos da
-demonstração de POO ainda manipulam objetos em memória.
-O CRUD de categorias desta entrega está descrito acima. Não inclui API HTTP,
-interface web, sessão de login, envio de mensagens, OAuth,
-galeria de fotos ou avaliações. A conferência de senha implementada é uma base
-para autenticação; ainda não constitui um sistema de autenticação web.
-
-O contato da demonstração é liberado como telefone, conforme a tela de detalhes
-do match. A aplicação não envia mensagens nem acessa WhatsApp.
-
-## Entrega do repositório
-
-O código foi desenvolvido em branches e integrado à `main`, com commits reais
-dos blocos implementados. As branches não comprovam contribuições individuais
-dos integrantes: não há autoria ou colaboração simulada.
-
-Link para submissão: [FabioMSCoelho/Fecho](https://github.com/FabioMSCoelho/Fecho).
-O histórico desta sprint e os comandos de publicação estão em [docs/GIT.md](docs/GIT.md).
-Para a demonstração prática atual, siga [docs/CRUD-MYSQL.md](docs/CRUD-MYSQL.md).
-O roteiro `APRESENTACAO.md` registra a etapa anterior de POO.
+Repositório para submissão: **[FabioMSCoelho/Fecho](https://github.com/FabioMSCoelho/Fecho)**.
+O GitHub hospeda o código; o servidor C# e o MySQL são executados localmente para a demonstração.
