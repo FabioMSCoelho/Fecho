@@ -20,12 +20,17 @@ public sealed class CatalogoController(ICrudObjetos objetos, ICrudCategorias cat
         if (!ModelState.IsValid) filtro = new FiltroCatalogo();
         if (!usuarioId.HasValue && (filtro.ParaMim || filtro.Curtidos)) return Challenge();
         var interesses = usuarioId.HasValue ? negociacao.ListarInteresses(usuarioId.Value) : new Dictionary<int, TipoInteresse>();
-        var origem = objetos.Listar().AsEnumerable();
+        var todos = objetos.Listar();
+        var origem = todos.AsEnumerable();
         if (filtro.Curtidos) origem = origem.Where(o => interesses.GetValueOrDefault(o.Id) == TipoInteresse.LIKE && interesses.ContainsKey(o.Id));
-        var ignorados = filtro.Curtidos ? new HashSet<int>() : interesses.Where(i => i.Value == TipoInteresse.DISLIKE).Select(i => i.Key).ToHashSet();
+        // A descoberta sempre retoma pelo primeiro objeto ainda não avaliado.
+        // Remover os avaliados antes de paginar evita pular objetos ao avançar.
+        var ignorados = filtro.Curtidos ? new HashSet<int>() : interesses.Keys.ToHashSet();
+        if (!filtro.Curtidos) filtro.Pagina = 1;
         var resultado = busca.Executar(origem, filtro.ParaBusca(), usuarioId,
             filtro.ParaMim ? desejos.Listar(usuarioId!.Value) : null, ignorados);
-        return View(new CatalogoPagina(filtro, resultado, categorias.Listar(), interesses));
+        return View(new CatalogoPagina(filtro, resultado, categorias.Listar(), interesses,
+            todos.Any(o => o.Proprietario.Id == usuarioId && o.Status == StatusObjeto.DISPONIVEL)));
     }
 
     [HttpGet("objetos/{id:int:min(1)}")]

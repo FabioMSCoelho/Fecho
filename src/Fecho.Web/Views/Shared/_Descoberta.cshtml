@@ -1,0 +1,48 @@
+@model CatalogoPagina
+@{ var objeto = Model.Resultado.Itens.FirstOrDefault(); var autenticado = User.Identity?.IsAuthenticated == true; }
+<div id="descoberta" data-discovery data-reload="@(Context.Request.Path + Context.Request.QueryString)">
+    <div class="result-meta"><span><strong>@Model.Resultado.Total</strong> @(Model.Resultado.Total == 1 ? "objeto disponível" : "objetos disponíveis")</span><span>Uma escolha pode dar início a uma boa história.</span></div>
+    @if (objeto is null)
+    {
+        <div class="empty-state discovery-empty" tabindex="-1" data-discovery-empty><span class="empty-discovery-icon"><svg class="icon"><use href="#i-check" /></svg></span><h2>Por aqui, você já viu tudo.</h2><p>Novos objetos vão trazer novas possibilidades.<br />Você também pode ampliar os filtros ou conferir o que já curtiu.</p><div class="discovery-empty-actions"><a href="/#achados" class="button button-outline">Ampliar a busca</a><a href="@(autenticado ? "/?Curtidos=true#achados" : "/conta/cadastrar")" class="button button-dark">@(autenticado ? "Ver meus interesses" : "Começar a trocar")</a></div></div>
+    }
+    else
+    {
+        <div class="discovery-layout">
+            <div class="swipe-column">
+                <div class="swipe-stack">
+                    <article class="swipe-card" tabindex="0" data-swipe-card data-object-id="@objeto.Id" aria-label="@objeto.Nome" aria-describedby="swipe-instructions">
+                        <img class="swipe-picture" src="@Apresentacao.Imagem(objeto)" alt="@objeto.Nome" width="720" height="680" fetchpriority="high" draggable="false" />
+                        <div class="swipe-badges"><span class="swipe-category">@objeto.Categoria.Nome</span><span>@Apresentacao.Estado(objeto.EstadoConservacao)</span></div>
+                        <span class="swipe-stamp swipe-stamp-like" aria-hidden="true">CURTI</span><span class="swipe-stamp swipe-stamp-pass" aria-hidden="true">PASSEI</span>
+                        <div class="swipe-caption"><span>SEU PRÓXIMO ACHADO?</span><strong>@objeto.Nome</strong><span><svg class="icon"><use href="#i-local" /></svg>@(objeto.Proprietario.Cidade ?? "Cidade não informada")</span></div>
+                    </article>
+                </div>
+                @if (autenticado && Model.PossuiObjetoDisponivel)
+                {
+                    <form action="/objetos/@objeto.Id/interesse" method="post" asp-antiforgery="true" class="swipe-actions" data-discovery-form>
+                        <input type="hidden" name="retorno" value="@(Context.Request.Path + Context.Request.QueryString)#achados" />
+                        <button type="submit" name="tipo" value="DISLIKE" class="swipe-action swipe-pass" aria-label="Passar @objeto.Nome"><svg class="icon"><use href="#i-passar" /></svg><span>Passar</span></button>
+                        <a href="/objetos/@objeto.Id" class="swipe-info" aria-label="Ver detalhes de @objeto.Nome"><svg class="icon"><use href="#i-info" /></svg></a>
+                        <button type="submit" name="tipo" value="LIKE" class="swipe-action swipe-like" aria-label="Curtir @objeto.Nome"><svg class="icon"><use href="#i-match" /></svg><span>Curtir</span></button>
+                    </form>
+                    <p class="swipe-instructions" id="swipe-instructions">← Passe à esquerda <span>·</span> Curta à direita →<br /><span>Arraste o card, use os botões ou as setas do teclado.</span></p>
+                }
+                else
+                {
+                    <div class="swipe-actions"><a class="swipe-action swipe-pass" href="@(autenticado ? "/objetos/novo" : "/conta/entrar?retorno=%2F%23achados")" aria-label="@(autenticado ? "Cadastre um objeto para começar" : "Entre para passar ou curtir objetos")"><svg class="icon"><use href="#i-passar" /></svg><span>Passar</span></a><a class="swipe-action swipe-like" href="@(autenticado ? "/objetos/novo" : "/conta/entrar?retorno=%2F%23achados")"><svg class="icon"><use href="#i-match" /></svg><span>Curtir</span></a></div>
+                    <p class="swipe-instructions" id="swipe-instructions">@(autenticado ? "Cadastre um objeto disponível para começar a trocar." : "Entre na sua conta para passar ou curtir os objetos.")</p>
+                }
+            </div>
+            <aside class="discovery-details" aria-label="Informações do objeto">
+                <span class="eyebrow">@objeto.Categoria.Nome · #@objeto.Id</span><h2>@objeto.Nome</h2><p class="location"><svg class="icon"><use href="#i-local" /></svg>@(objeto.Proprietario.Cidade ?? "Cidade não informada")</p>
+                <div class="discovery-description"><h3>Uma história para continuar</h3><p>@(string.IsNullOrWhiteSpace(objeto.Descricao) ? "Esse objeto está pronto para ganhar um novo lar. Veja se ele combina com o que você procura." : objeto.Descricao)</p></div>
+                <dl class="discovery-facts"><div><dt>Conservação</dt><dd>@Apresentacao.Estado(objeto.EstadoConservacao)</dd></div><div><dt>Valor estimado</dt><dd>@(objeto.ValorEstimado.HasValue ? $"R$ {objeto.ValorEstimado.Value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))}" : "Não informado")</dd></div></dl>
+                <div class="discovery-owner"><span class="avatar">@objeto.Proprietario.Nome[..1].ToUpperInvariant()</span><div><span>COLOCADO PRA CIRCULAR POR</span><strong>@objeto.Proprietario.Nome</strong></div><svg class="icon"><use href="#i-troca" /></svg></div>
+                <a class="subtle-link" href="/objetos/@objeto.Id">Ver todos os detalhes <svg class="icon"><use href="#i-seta" /></svg></a>
+                <p class="discovery-privacy"><svg class="icon"><use href="#i-match" /></svg>Se vocês curtirem os objetos um do outro, é match. O contato é liberado só para vocês.</p>
+                @if (autenticado && !Model.PossuiObjetoDisponivel) { <a class="button button-dark full-width" href="/objetos/novo">Cadastrar meu primeiro objeto</a> }
+            </aside>
+        </div>
+    }
+</div>
