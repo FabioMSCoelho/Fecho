@@ -1,7 +1,7 @@
 @model Objeto
 @{ var curtidos = ViewData["Interesses"] as IReadOnlyDictionary<int, TipoInteresse>; var curtiu = curtidos?.GetValueOrDefault(Model.Id) == TipoInteresse.LIKE && curtidos.ContainsKey(Model.Id); }
 <article class="object-card">
-    <a class="card-picture" href="/objetos/@Model.Id" aria-label="Ver @Model.Nome"><img src="@Apresentacao.Imagem(Model)" alt="@Model.Nome" loading="lazy" width="600" height="450" /><span class="condition-tag">@Apresentacao.Estado(Model.EstadoConservacao)</span></a>
+    <a class="card-picture" href="/objetos/@Model.Id" aria-label="Ver @Model.Nome"><img asp-append-version="true" src="@Apresentacao.Imagem(Model)" alt="@Model.Nome" loading="lazy" width="600" height="450" /><span class="condition-tag">@Apresentacao.Estado(Model.EstadoConservacao)</span></a>
     <div class="card-body"><span class="category-label">@Model.Categoria.Nome</span><a class="card-title" href="/objetos/@Model.Id">@Model.Nome</a><p class="location"><svg class="icon"><use href="#i-local" /></svg>@(Model.Proprietario.Cidade ?? "Cidade não informada")</p>
         <div class="card-bottom"><span class="owner-line"><span class="avatar avatar-small">@Model.Proprietario.Nome[..1]</span>@Model.Proprietario.Nome.Split(' ')[0]</span>
         @if (User.Identity?.IsAuthenticated == true)
