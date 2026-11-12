@@ -21,13 +21,18 @@ case "$comando" in
     build) projeto="Fecho.slnx" ;;
     crud) projeto="src/Fecho.Console/Fecho.Console.csproj" ;;
     integration) projeto="tests/Fecho.Integracao/Fecho.Integracao.csproj" ;;
+    web|seed) projeto="src/Fecho.Web/Fecho.Web.csproj" ;;
+    web-test) projeto="tests/Fecho.Web.Testes/Fecho.Web.Testes.csproj" ;;
     demo) projeto="src/Fecho.Console/Fecho.Console.csproj" ;;
     test) projeto="tests/Fecho.Testes/Fecho.Testes.csproj" ;;
-    *) printf '%s\n' 'Uso: bash scripts/fecho.sh [demo|crud|test|integration|build]' >&2; exit 2 ;;
+    *) printf '%s\n' 'Uso: bash scripts/fecho.sh [web|seed|web-test|demo|crud|test|integration|build]' >&2; exit 2 ;;
 esac
 
 "$dotnet_exe" build "$projeto" --configuration Release --nologo --disable-build-servers -m:1
 case "$comando" in
+    web) cd "$raiz/src/Fecho.Web"; exec "$dotnet_exe" bin/Release/net10.0/Fecho.Web.dll ;;
+    seed) cd "$raiz/src/Fecho.Web"; exec "$dotnet_exe" bin/Release/net10.0/Fecho.Web.dll --seed-demo ;;
+    web-test) exec "$dotnet_exe" tests/Fecho.Web.Testes/bin/Release/net10.0/Fecho.Web.Testes.dll ;;
     crud) exec "$dotnet_exe" src/Fecho.Console/bin/Release/net10.0/Fecho.Console.dll --crud ;;
     integration) exec "$dotnet_exe" tests/Fecho.Integracao/bin/Release/net10.0/Fecho.Integracao.dll ;;
     demo) exec "$dotnet_exe" src/Fecho.Console/bin/Release/net10.0/Fecho.Console.dll ;;

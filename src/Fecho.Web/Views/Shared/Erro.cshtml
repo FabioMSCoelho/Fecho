@@ -1,0 +1,11 @@
+@{
+    var codigo = ViewData["Codigo"] as int? ?? 500;
+    ViewData["Title"] = codigo == 404 ? "Página não encontrada" : "Vamos tentar de novo";
+}
+<section class="shell empty-page">
+    <span class="eyebrow">UM PEQUENO DESVIO · @codigo</span>
+    <div class="empty-icon"><svg class="icon"><use href="#i-troca" /></svg></div>
+    <h1>@(codigo == 404 ? "Esse achado não está por aqui." : codigo == 403 ? "Esse espaço pertence a outra pessoa." : codigo == 429 ? "Vamos com um pouco de calma?" : "A conexão precisa de um instante.")</h1>
+    <p>@(codigo == 404 ? "O endereço pode ter mudado ou o objeto pode ter sido removido." : codigo == 403 ? "Você pode editar seus objetos e acompanhar os matches dos quais participa." : codigo == 429 ? "Você fez várias tentativas. Aguarde um minuto antes de tentar novamente." : "Não foi possível completar sua solicitação. Tente novamente em alguns instantes.")</p>
+    <a class="button button-dark" href="/">Voltar a explorar <svg class="icon"><use href="#i-seta" /></svg></a>
+</section>

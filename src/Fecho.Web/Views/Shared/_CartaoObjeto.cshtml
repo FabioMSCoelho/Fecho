@@ -1,0 +1,14 @@
+@model Objeto
+@{ var curtidos = ViewData["Interesses"] as IReadOnlyDictionary<int, TipoInteresse>; var curtiu = curtidos?.GetValueOrDefault(Model.Id) == TipoInteresse.LIKE && curtidos.ContainsKey(Model.Id); }
+<article class="object-card">
+    <a class="card-picture" href="/objetos/@Model.Id" aria-label="Ver @Model.Nome"><img src="@Apresentacao.Imagem(Model)" alt="@Model.Nome" loading="lazy" width="600" height="450" /><span class="condition-tag">@Apresentacao.Estado(Model.EstadoConservacao)</span></a>
+    <div class="card-body"><span class="category-label">@Model.Categoria.Nome</span><a class="card-title" href="/objetos/@Model.Id">@Model.Nome</a><p class="location"><svg class="icon"><use href="#i-local" /></svg>@(Model.Proprietario.Cidade ?? "Cidade não informada")</p>
+        <div class="card-bottom"><span class="owner-line"><span class="avatar avatar-small">@Model.Proprietario.Nome[..1]</span>@Model.Proprietario.Nome.Split(' ')[0]</span>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <form action="/objetos/@Model.Id/interesse" method="post" asp-antiforgery="true"><input type="hidden" name="tipo" value="@(curtiu ? "DISLIKE" : "LIKE")" /><input type="hidden" name="retorno" value="@(Context.Request.Path + Context.Request.QueryString)" /><button class="heart-button @(curtiu ? "liked" : "")" type="submit" aria-label="@(curtiu ? "Retirar interesse em " : "Tenho interesse em ")@Model.Nome" aria-pressed="@curtiu.ToString().ToLowerInvariant()"><svg class="icon"><use href="#i-match" /></svg></button></form>
+        }
+        else { <a class="heart-button" href="/conta/entrar" aria-label="Entre para registrar interesse em @Model.Nome"><svg class="icon"><use href="#i-match" /></svg></a> }
+        </div>
+    </div>
+</article>

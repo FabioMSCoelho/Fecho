@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Dê uma nova história aos seus objetos. Encontre pessoas, descubra achados e combine trocas no Fechô." />
+    <title>@(ViewData["Title"] ?? "Boas trocas, novas histórias") · Fechô</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+</head>
+<body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <partial name="_Icones" />
+    <header class="site-header">
+        <div class="nav-shell">
+            <a class="brand" href="/" aria-label="Fechô, página inicial"><span class="brand-mark"><svg class="icon"><use href="#i-troca" /></svg></span>fechô<span class="brand-dot">.</span></a>
+            <nav aria-label="Navegação principal">
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Catalogo" ? "active" : "")" href="/">Explorar</a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a class="nav-link" href="/meus-objetos">Meus objetos</a>
+                    <a class="nav-link" href="/desejos">Meus desejos</a>
+                    <a class="nav-link" href="/matches"><svg class="icon"><use href="#i-match" /></svg> Matches</a>
+                }
+                else
+                { <a class="nav-link" href="/#como-funciona">Como funciona</a> }
+            </nav>
+            <div class="nav-account">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a class="profile-link" href="/conta/perfil"><span class="avatar">@(User.Identity.Name?[..1].ToUpperInvariant())</span><span>@(User.Identity.Name?.Split(' ')[0])</span></a>
+                    <form asp-controller="Conta" asp-action="Sair" method="post"><button class="text-button" type="submit">Sair</button></form>
+                }
+                else
+                { <a class="text-button" href="/conta/entrar">Entrar</a><a class="button button-dark button-small" href="/conta/cadastrar">Começar a trocar <span aria-hidden="true">↗</span></a> }
+            </div>
+        </div>
+    </header>
+    <main id="conteudo">
+        @if (TempData["Sucesso"] is string sucesso)
+        { <div class="notice success shell" role="status"><svg class="icon"><use href="#i-check" /></svg><span>@sucesso</span><button type="button" class="notice-close" data-dismiss aria-label="Fechar aviso">×</button></div> }
+        @if (TempData["Erro"] is string erro)
+        { <div class="notice error shell" role="alert"><span>@erro</span><button type="button" class="notice-close" data-dismiss aria-label="Fechar aviso">×</button></div> }
+        @RenderBody()
+    </main>
+    <footer class="site-footer shell"><a class="brand footer-brand" href="/">fechô<span class="brand-dot">.</span></a><p>Menos coisas paradas. Mais histórias compartilhadas.</p><span>Feito para circular.</span></footer>
+</body>
+</html>
