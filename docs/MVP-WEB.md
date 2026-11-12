@@ -104,6 +104,17 @@ Na demonstração, mostre um arrasto curto, um swipe para passar e outro para cu
 Depois entre com a outra conta e curta um objeto do primeiro usuário para mostrar
 o aviso de match e o contato liberado.
 
+## Identidade visual
+
+A logo fornecida pela equipe está em `wwwroot/marca/fecho-logo.jpg`, preservada no
+formato original. Ela aparece no cabeçalho e no rodapé. O favicon usa as mesmas
+referências de cartões, setas de troca e cores roxa e rosa.
+
+As cores e superfícies compartilhadas são definidas nas variáveis de `:root` em
+`wwwroot/css/site.css`. O roxo identifica ações principais e navegação; o rosa
+destaca o interesse e o match. `wwwroot/css/descoberta.css` organiza a apresentação
+dos cards, as ações e o aviso de match nos diferentes tamanhos de tela.
+
 ## Telas e caminho dos dados
 
 | Tela | Endereço | Persistência |

@@ -1,17 +1,22 @@
 :root {
-    --ink: #203b30;
-    --muted: #68746d;
-    --green: #174b3b;
-    --green-dark: #10392d;
-    --lime: #deedac;
-    --cream: #f8f7f2;
-    --line: #e3e7df;
+    --ink: #28183d;
+    --muted: #70677f;
+    --primary: #6200ee;
+    --primary-dark: #4900b8;
+    --primary-soft: #f1eaff;
+    --accent: #f53678;
+    --accent-dark: #bd1853;
+    --accent-soft: #ffe4ee;
+    --page: #f8f7fc;
+    --line: #e8e2f0;
     --white: #fff;
-    --danger: #a13735;
-    --radius: 18px;
-    font-family: Inter,"Segoe UI",Arial,sans-serif;
+    --danger: #b22b4c;
+    --radius: 22px;
+    --shadow-soft: 0 8px 30px #3d126508;
+    --shadow-card: 0 20px 60px #3d12650d;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
     color: var(--ink);
-    background: var(--cream);
+    background: var(--page);
     font-synthesis: none;
 }
 
@@ -63,13 +68,13 @@ h1,h2 {
 
 h1 {
     font-size: 43px;
-    font-weight: 550;
+    font-weight: 750;
     margin-bottom: 18px;
 }
 
 h2 {
     font-size: 31px;
-    font-weight: 550;
+    font-weight: 750;
     margin-bottom: 12px;
 }
 
@@ -84,8 +89,9 @@ p {
 }
 
 em {
-    font-family: Georgia,serif;
-    font-weight: 400;
+    font-family: inherit;
+    font-weight: inherit;
+    font-style: normal;
 }
 
 svg.icon {
@@ -114,7 +120,7 @@ svg.icon {
     position: absolute;
     left: 16px;
     top: -100px;
-    background: var(--green);
+    background: var(--primary);
     color: white;
     padding: 10px;
     z-index: 10;
@@ -125,18 +131,23 @@ svg.icon {
 }
 
 :focus-visible {
-    outline: 3px solid #75a98c;
+    outline: 3px solid #9a64e8;
     outline-offset: 4px;
 }
 
 ::selection {
-    background: var(--lime);
-    color: var(--green-dark);
+    background: var(--accent-soft);
+    color: var(--primary-dark);
 }
 
 .site-header {
-    background: #fffdf9;
+background: #ffffffed;
     border-bottom: 1px solid var(--line);
+    box-shadow: 0 3px 20px #3d126504;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(18px);
 }
 
 .nav-shell {
@@ -145,58 +156,52 @@ svg.icon {
     padding: 20px 36px;
     display: flex;
     align-items: center;
-    gap: 48px;
+    gap: 32px;
     min-height: 88px;
 }
 
 .brand {
-    font-size: 34px;
+font-size: 34px;
     font-weight: 850;
-    letter-spacing: -2px;
+    letter-spacing: -1.6px;
     display: inline-flex;
     align-items: center;
     line-height: 1;
-    gap: 9px;
+    gap: 10px;
+    flex-shrink: 0;
+    color: var(--primary);
 }
 
-.brand-mark {
-    display: grid;
-    place-items: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: var(--green);
-    color: var(--lime);
-}
 
-.brand-mark .icon {
-    width: 26px;
-    height: 26px;
-}
 
 .brand-dot {
-    color: #88a951;
-    margin-left: -9px;
+color: var(--accent);
+    margin-left: 0;
 }
 
 .site-header nav {
     display: flex;
     align-items: center;
-    gap: 27px;
+    gap: 5px;
     flex: 1;
 }
 
 .nav-link {
-    font-size: 14px;
-    color: #68756c;
+font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
     white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 6px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    transition: background .18s, color .18s;
 }
 
 .nav-link:hover,.nav-link.active {
-    color: var(--green);
+color: var(--primary);
+    background: var(--primary-soft);
     font-weight: 650;
 }
 
@@ -227,11 +232,11 @@ svg.icon {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: #e3e9d4;
+    background: var(--primary-soft);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--green);
+    color: var(--primary);
     font-weight: 650;
     flex-shrink: 0;
 }
@@ -249,18 +254,18 @@ svg.icon {
 }
 
 .button {
-    min-height: 47px;
+min-height: 47px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
     border: 1px solid transparent;
-    border-radius: 9px;
+    border-radius: 12px;
     padding: 12px 20px;
     font-size: 13px;
-    font-weight: 650;
+    font-weight: 700;
     line-height: 1.5;
-    transition: background .15s,transform .15s;
+    transition: background .18s, transform .18s, box-shadow .18s;
 }
 
 .button:hover {
@@ -268,22 +273,24 @@ svg.icon {
 }
 
 .button-dark {
-    background: var(--green);
-    color: #fff;
+background: linear-gradient(135deg, #7626f5, var(--primary));
+    color: white;
+    box-shadow: 0 5px 12px #6200ee1a;
 }
 
 .button-dark:hover {
-    background: var(--green-dark);
+background: var(--primary-dark);
+    box-shadow: 0 7px 18px #6200ee26;
 }
 
 .button-outline {
-    background: transparent;
-    border-color: #cdd7ca;
-    color: var(--green);
+background: white;
+    border-color: var(--line);
+    color: var(--primary);
 }
 
 .button-outline:hover {
-    background: #eaf0e3;
+    background: var(--primary-soft);
 }
 
 .button-small {
@@ -301,7 +308,7 @@ svg.icon {
     border: 0;
     background: transparent;
     padding: 5px 0;
-    color: var(--green);
+    color: var(--primary);
     font-size: 13px;
     display: inline-flex;
     align-items: center;
@@ -352,10 +359,10 @@ svg.icon {
     display: inline-block;
     width: 7px;
     height: 7px;
-    background: #81a755;
+    background: var(--accent);
     border-radius: 50%;
     margin-right: 7px;
-    box-shadow: 0 0 0 4px #e8eddb;
+    box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
 .hero {
@@ -368,14 +375,14 @@ svg.icon {
 
 .hero h1 {
     font-size: clamp(42px,4.5vw,64px);
-    font-weight: 550;
+    font-weight: 750;
     line-height: 1.06;
     letter-spacing: -2.5px;
     margin-bottom: 23px;
 }
 
 .hero h1 em {
-    color: #59835e;
+    color: var(--primary);
 }
 
 .hero p {
@@ -417,7 +424,7 @@ svg.icon {
     background: white;
     padding: 12px 18px;
     border-radius: 10px;
-    box-shadow: 0 8px 40px #1e46320a;
+    box-shadow: 0 8px 40px #3d12650a;
     font-size: 10px;
     position: absolute;
     bottom: 0;
@@ -428,7 +435,7 @@ svg.icon {
 .floating-note .icon {
     width: 18px;
     height: 18px;
-    color: #6c9254;
+    color: var(--primary);
 }
 
 .catalog-section {
@@ -471,7 +478,7 @@ svg.icon {
 
 .filter-panel {
     border: 1px solid var(--line);
-    background: #fdfdf9;
+    background: #ffffff;
     border-radius: 13px;
     padding: 22px 18px;
     display: flex;
@@ -515,7 +522,7 @@ svg.icon {
 
 .field-link {
     font-size: 10px;
-    color: #587746;
+    color: var(--primary);
     padding-left: 24px;
 }
 
@@ -536,7 +543,7 @@ svg.icon {
     display: flex;
     align-items: center;
     gap: 10px;
-    border: 1px solid #d9e0d4;
+    border: 1px solid var(--line);
     border-radius: 9px;
     padding: 6px 7px 6px 13px;
     background: #fff;
@@ -547,7 +554,7 @@ svg.icon {
 .search-field .icon {
     width: 19px;
     height: 19px;
-    color: #64775f;
+    color: var(--muted);
 }
 
 .search-field input {
@@ -562,7 +569,7 @@ svg.icon {
 .search-field button {
     border: 0;
     border-radius: 6px;
-    background: var(--green);
+    background: var(--primary);
     color: white;
     font-size: 11px;
     font-weight: 650;
@@ -613,16 +620,17 @@ svg.icon {
 }
 
 .object-card {
-    background: #fff;
-    border: 1px solid #e7e8e0;
-    border-radius: 12px;
+border: 1px solid var(--line);
+    border-radius: 19px;
     overflow: hidden;
-    transition: box-shadow .2s,transform .2s;
+    background: white;
+    box-shadow: var(--shadow-soft);
+    transition: transform .2s, box-shadow .2s;
 }
 
 .object-card:hover {
-    box-shadow: 0 10px 24px #193c2810;
-    transform: translateY(-3px);
+transform: translateY(-4px);
+    box-shadow: 0 15px 30px #3d126515;
 }
 
 .card-picture {
@@ -630,7 +638,7 @@ svg.icon {
     display: block;
     aspect-ratio: 4/3;
     overflow: hidden;
-    background: #eeeae0;
+    background: #f0ebf6;
 }
 
 .card-picture img {
@@ -649,8 +657,8 @@ svg.icon {
     bottom: 12px;
     left: 13px;
     border-radius: 5px;
-    background: #fffcf1e8;
-    color: #3f5547;
+    background: #ffffffed;
+    color: var(--ink);
     font-size: 9px;
     padding: 3px 8px;
     backdrop-filter: blur(6px);
@@ -664,7 +672,7 @@ svg.icon {
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 1.1px;
-    color: #62765d;
+    color: var(--primary);
     font-weight: 600;
     display: block;
     margin-bottom: 6px;
@@ -694,7 +702,7 @@ svg.icon {
 }
 
 .card-bottom {
-    border-top: 1px solid #edf0e8;
+    border-top: 1px solid var(--line);
     padding-top: 12px;
     display: flex;
     justify-content: space-between;
@@ -705,19 +713,19 @@ svg.icon {
     display: flex;
     align-items: center;
     gap: 7px;
-    color: #657362;
+    color: var(--muted);
     font-size: 10px;
 }
 
 .heart-button {
     width: 31px;
     height: 31px;
-    border: 1px solid #e1e8dc;
+    border: 1px solid var(--line);
     background: #fff;
     border-radius: 50%;
     display: grid;
     place-items: center;
-    color: #718368;
+    color: var(--primary);
 }
 
 .heart-button .icon {
@@ -726,13 +734,13 @@ svg.icon {
 }
 
 .heart-button:hover,.heart-button.liked {
-    color: var(--green);
-    background: #e6efd9;
-    border-color: #b9cba4;
+    color: var(--primary);
+    background: var(--accent-soft);
+    border-color: #f2afc9;
 }
 
 .heart-button.liked .icon {
-    fill: #dce9c7;
+    fill: var(--accent);
 }
 
 .card-bottom form {
@@ -769,7 +777,7 @@ svg.icon {
 .how-it-works li>span {
     width: 35px;
     height: 35px;
-    background: #e7edd9;
+    background: var(--primary-soft);
     display: grid;
     place-items: center;
     border-radius: 50%;
@@ -870,34 +878,35 @@ svg.icon {
 
 .field-note {
     font-size: 12px;
-    color: #6f786e;
+    color: var(--muted);
     line-height: 1.75;
     margin: 0 0 7px;
 }
 
 .required-mark {
-    color: #567c4c;
+    color: var(--primary);
 }
 
 .optional {
     font-size: 11px;
     font-weight: 400;
-    color: #838c80;
+    color: var(--muted);
     margin-left: 5px;
 }
 
 input:not([type=checkbox]):not([type=file]),select,textarea {
-    border: 1px solid #d8dfd3;
+border: 1px solid var(--line);
     background: #fff;
-    border-radius: 7px;
+    border-radius: 11px;
     padding: 12px 13px;
     color: var(--ink);
     min-width: 0;
     max-width: 100%;
+    transition: border-color .18s, box-shadow .18s;
 }
 
 input::placeholder,textarea::placeholder {
-    color: #8a9487;
+    color: #81778f;
 }
 
 textarea {
@@ -911,7 +920,7 @@ select {
 input[type=checkbox] {
     width: 15px;
     height: 15px;
-    accent-color: var(--green);
+    accent-color: var(--primary);
     flex-shrink: 0;
 }
 
@@ -927,7 +936,7 @@ input[type=checkbox] {
     display: flex;
     align-items: center;
     background: white;
-    border: 1px solid #d8dfd3;
+    border: 1px solid var(--line);
     border-radius: 7px;
     overflow: hidden;
 }
@@ -960,7 +969,7 @@ input[type=checkbox] {
 }
 
 .pagination a {
-    border: 1px solid #d6dfcf;
+    border: 1px solid var(--line);
     border-radius: 7px;
     padding: 8px 13px;
 }
@@ -983,7 +992,7 @@ input[type=checkbox] {
 }
 
 .back-link:hover {
-    color: var(--green);
+    color: var(--primary);
 }
 
 .detail-page {
@@ -1001,7 +1010,7 @@ input[type=checkbox] {
 .detail-image {
     border-radius: 20px;
     overflow: hidden;
-    background: #ebe8de;
+    background: #efebf5;
     position: sticky;
     top: 30px;
 }
@@ -1024,7 +1033,7 @@ input[type=checkbox] {
 .in-flow {
     position: static;
     display: inline-block;
-    background: #e7eddc;
+    background: var(--primary-soft);
     font-size: 11px;
     margin-bottom: 22px;
 }
@@ -1033,7 +1042,7 @@ input[type=checkbox] {
     white-space: pre-wrap;
     font-size: 14px;
     line-height: 1.9;
-    color: #63715e;
+    color: var(--muted);
 }
 
 .owner-block {
@@ -1068,7 +1077,7 @@ input[type=checkbox] {
 .estimate strong {
     display: block;
     font-size: 25px;
-    font-weight: 550;
+    font-weight: 750;
     margin: 4px 0;
 }
 
@@ -1090,7 +1099,7 @@ input[type=checkbox] {
     width: 17px;
     height: 17px;
     margin-top: 2px;
-    color: #668b58;
+    color: var(--primary);
 }
 
 .spaced {
@@ -1118,7 +1127,7 @@ input[type=checkbox] {
 }
 
 .auth-intro h1 em {
-    color: #668750;
+    color: var(--primary);
 }
 
 .auth-intro p {
@@ -1134,10 +1143,11 @@ input[type=checkbox] {
 }
 
 .form-panel {
-    padding: 32px;
-    background: #fff;
+padding: 32px;
+    background: var(--white);
     border: 1px solid var(--line);
-    border-radius: 15px;
+    border-radius: 24px;
+    box-shadow: var(--shadow-card);
 }
 
 .form-panel>.eyebrow {
@@ -1175,10 +1185,11 @@ input[type=checkbox] {
 }
 
 .password-field {
-    display: flex;
-    border: 1px solid #d8dfd3;
-    border-radius: 7px;
+display: flex;
+    border: 1px solid var(--line);
+    border-radius: 11px;
     overflow: hidden;
+    background: white;
 }
 
 .password-field input {
@@ -1220,7 +1231,7 @@ input[type=checkbox] {
 
 .form-bottom a {
     font-weight: 650;
-    color: var(--green);
+    color: var(--primary);
     text-decoration: underline;
     text-underline-offset: 4px;
 }
@@ -1239,7 +1250,7 @@ input[type=checkbox] {
 .intro-benefits .icon {
     width: 18px;
     height: 18px;
-    color: #668b58;
+    color: var(--primary);
 }
 
 .narrow-page {
@@ -1282,8 +1293,8 @@ input[type=checkbox] {
 
 .empty-state {
     text-align: center;
-    border: 1px dashed #d5decd;
-    background: #f4f6ec;
+    border: 1px dashed #cfc0e6;
+    background: var(--primary-soft);
     border-radius: 14px;
     padding: 48px 24px;
 }
@@ -1292,7 +1303,7 @@ input[type=checkbox] {
     width: 37px;
     height: 37px;
     margin: 0 auto 16px;
-    color: #7b9b61;
+    color: var(--primary);
 }
 
 .empty-state h3 {
@@ -1331,8 +1342,8 @@ input[type=checkbox] {
 }
 
 .empty-icon {
-    background: #e8edda;
-    color: #5a7e44;
+    background: var(--primary-soft);
+    color: var(--primary);
     width: 85px;
     height: 85px;
     border-radius: 50%;
@@ -1386,7 +1397,7 @@ input[type=checkbox] {
 
 .separator {
     margin: 0 8px;
-    color: #c6cdbd;
+    color: #c8bfda;
 }
 
 .my-object-actions {
@@ -1455,8 +1466,8 @@ input[type=checkbox] {
 
 .photo-panel {
     padding: 25px;
-    background: #eeefe4;
-    border: 1px solid #e0e4d5;
+    background: var(--primary-soft);
+    border: 1px solid var(--line);
     border-radius: 14px;
 }
 
@@ -1470,7 +1481,7 @@ input[type=checkbox] {
 .upload-preview {
     border-radius: 10px;
     overflow: hidden;
-    background: #e5e4d7;
+    background: #e7dff1;
     margin-bottom: 18px;
     aspect-ratio: 1.2;
 }
@@ -1494,7 +1505,7 @@ input[type=checkbox] {
 }
 
 .tip-box {
-    border-top: 1px solid #d8decb;
+    border-top: 1px solid var(--line);
     margin-top: 25px;
     padding-top: 19px;
 }
@@ -1540,7 +1551,7 @@ input[type=checkbox] {
 }
 
 .wish-icon {
-    background: #e9efde;
+    background: var(--primary-soft);
     display: grid;
     place-items: center;
     width: 44px;
@@ -1617,7 +1628,7 @@ input[type=checkbox] {
     aspect-ratio: 1.25;
     object-fit: cover;
     border-radius: 10px;
-    background: #e9e6db;
+    background: #f0ebf6;
 }
 
 .swap-circle {
@@ -1626,8 +1637,8 @@ input[type=checkbox] {
     border-radius: 50%;
     display: grid;
     place-items: center;
-    background: var(--green);
-    color: #e5f1ba;
+    background: var(--primary);
+    color: #ffffff;
     border: 4px solid white;
     position: absolute;
     left: 50%;
@@ -1651,7 +1662,7 @@ input[type=checkbox] {
 }
 
 .match-copy h2 span {
-    color: #8ca577;
+    color: var(--accent);
     margin: 0 7px;
 }
 
@@ -1684,8 +1695,8 @@ input[type=checkbox] {
     display: flex;
     align-items: center;
     gap: 16px;
-    background: #e8efda;
-    border: 1px solid #d2ddbf;
+    background: var(--primary-soft);
+    border: 1px solid #dfcff7;
     border-radius: 12px;
     padding: 25px;
     margin: 25px 0 0;
@@ -1704,13 +1715,13 @@ input[type=checkbox] {
 
 .contact-card>.icon {
     margin-left: auto;
-    color: #668b58;
+    color: var(--primary);
 }
 
 .phone-number {
     font-size: 19px;
     letter-spacing: 1px;
-    color: var(--green);
+    color: var(--primary);
     margin: 0;
 }
 
@@ -1806,10 +1817,7 @@ input[type=checkbox] {
     .brand {
         font-size: 30px;
     }
-    .brand-mark {
-        width: 33px;
-        height: 33px;
-    }
+
     .hero {
         padding: 35px 0;
         gap: 0;
@@ -2044,10 +2052,7 @@ input[type=checkbox] {
     .brand {
         font-size: 28px;
     }
-    .brand-mark {
-        width: 31px;
-        height: 31px;
-    }
+
     .avatar {
         width: 35px;
         height: 35px;
@@ -2357,4 +2362,54 @@ input[type=checkbox] {
         transition: none!important;
         animation: none!important;
     }
+}
+
+/* Identidade Fechô: a marca original orienta as cores e as superfícies. */
+body {
+    background: radial-gradient(ellipse at 100% 0, #eee5ff70, transparent 42%), var(--page);
+}
+.brand-logo { width: 52px; height: 52px; object-fit: contain; border-radius: 16px; flex-shrink: 0; }
+.brand-name { font-style: italic; font-weight: 850; }
+.footer-brand .brand-logo { width: 38px; height: 38px; border-radius: 12px; }
+.avatar { background: var(--primary-soft); border: 1px solid #e4d4fc; color: var(--primary); }
+.nav-account .text-button { color: var(--muted); }
+.nav-account .text-button:hover { color: var(--primary); }
+.site-footer { border-top: 1px solid var(--line); }
+.eyebrow { color: var(--primary); letter-spacing: 1.5px; }
+.hero h1 em, .auth-intro h1 em { color: var(--primary); }
+.subtle-link { color: var(--primary); }
+.subtle-link:hover { color: var(--primary-dark); }
+.form-bottom a { color: var(--primary); text-underline-offset: 3px; }
+input:not([type=checkbox]):not([type=file]):focus, select:focus, textarea:focus {
+    border-color: #ad7bf3;
+    box-shadow: 0 0 0 4px #6200ee0c;
+}
+.password-field:focus-within, .search-field:focus-within, .input-prefix:focus-within {
+    border-color: #ad7bf3;
+    box-shadow: 0 0 0 4px #6200ee0c;
+}
+.password-field input:focus, .search-field input:focus, .input-prefix input:focus { box-shadow: none; outline: none; }
+.file-input::file-selector-button { background: white; color: var(--primary); border: 1px solid #d9c3f9; border-radius: 9px; padding: 8px 12px; margin-right: 9px; cursor: pointer; }
+.photo-panel, .wish-card { border-radius: 20px; }
+.match-card { border-radius: 22px; box-shadow: var(--shadow-soft); }
+.contact-card { background: var(--primary-soft); border-color: #dfcff7; }
+.heart-button.liked { color: var(--accent-dark); }
+.heart-button.liked .icon { fill: var(--accent-soft); }
+@media (max-width: 1100px) {
+    .site-header nav { gap: 2px; }
+    .nav-link { padding: 9px 10px; }
+    .nav-shell { gap: 24px; }
+}
+@media (max-width: 800px) {
+    .nav-shell { padding: 12px 20px; gap: 12px; }
+    .brand-logo { width: 44px; height: 44px; border-radius: 14px; }
+    .site-header nav { padding-top: 0; gap: 3px; }
+    .nav-link { font-size: 12px; padding: 8px 11px; }
+}
+@media (max-width: 580px) {
+    .brand { font-size: 29px; gap: 7px; }
+    .nav-account { gap: 12px; }
+    .nav-link { padding: 7px 9px; font-size: 11px; }
+    .site-footer .brand { font-size: 23px; }
+    .form-panel { border-radius: 20px; }
 }
