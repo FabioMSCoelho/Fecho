@@ -2,6 +2,8 @@
   <Project Path="src/Fecho.Core/Fecho.Core.csproj" />
   <Project Path="src/Fecho.Infraestrutura/Fecho.Infraestrutura.csproj" />
   <Project Path="src/Fecho.Console/Fecho.Console.csproj" />
+  <Project Path="src/Fecho.Web/Fecho.Web.csproj" />
   <Project Path="tests/Fecho.Testes/Fecho.Testes.csproj" />
   <Project Path="tests/Fecho.Integracao/Fecho.Integracao.csproj" />
+  <Project Path="tests/Fecho.Web.Testes/Fecho.Web.Testes.csproj" />
 </Solution>

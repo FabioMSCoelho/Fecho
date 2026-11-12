@@ -1,0 +1,36 @@
+@model CatalogoPagina
+@{
+    ViewData["Title"] = Model.Filtro.Curtidos ? "Seus interesses" : "Explore novas histórias";
+    ViewData["Interesses"] = Model.Interesses;
+    string Pagina(int numero) => Url.Action("Index", "Catalogo", new { Model.Filtro.Texto, Model.Filtro.CategoriaId, Model.Filtro.Estado,
+        Model.Filtro.Cidade, Model.Filtro.ValorMaximo, Model.Filtro.Ordem, Pagina = numero, Model.Filtro.ParaMim, Model.Filtro.Curtidos })!;
+}
+<section class="hero shell">
+    <div class="hero-copy"><span class="eyebrow"><span class="live-dot"></span> BOAS TROCAS COMEÇAM AQUI</span><h1>O que fica parado<br />pode ganhar <em>história.</em></h1><p>Seu próximo achado pode ser a troca perfeita de alguém.<br class="desktop-only" /> Conecte objetos, pessoas e novas possibilidades.</p>
+    <div class="hero-actions"><a href="@(User.Identity?.IsAuthenticated == true ? "/objetos/novo" : "/conta/cadastrar")" class="button button-dark">Colocar um objeto pra jogo <svg class="icon"><use href="#i-seta" /></svg></a><span class="hero-note">Sem dinheiro.<br />Com novas possibilidades.</span></div></div>
+    <div class="hero-art" aria-hidden="true"><img src="/arte/circulando.svg" alt="" width="480" height="330" /><span class="floating-note"><svg class="icon"><use href="#i-troca" /></svg> Bom pra você. Bom pra circular.</span></div>
+</section>
+<section class="catalog-section shell" id="achados">
+    <div class="section-heading"><div><span class="eyebrow">COISAS BOAS MERECEM CIRCULAR</span><h2>@(Model.Filtro.Curtidos ? "Seus interesses" : Model.Filtro.ParaMim ? "Achados para você" : "Encontre seu próximo achado")</h2></div>
+    @if (User.Identity?.IsAuthenticated == true) { <a class="subtle-link" href="/?Curtidos=true#achados">Meus interesses <svg class="icon"><use href="#i-match" /></svg></a> }</div>
+    <div asp-validation-summary="All" class="validation" role="alert"></div>
+    <div class="catalog-layout">
+        <form id="filtros" method="get" action="/#achados" class="filter-panel" aria-label="Filtros do catálogo"><h3><svg class="icon"><use href="#i-filtro" /></svg> Do seu jeito</h3>
+            <label for="categoria">Categoria</label><select id="categoria" name="CategoriaId"><option value="">Todas as categorias</option>@foreach (var c in Model.Categorias) { <option value="@c.Id" selected="@(Model.Filtro.CategoriaId == c.Id)">@c.Nome (@Model.Resultado.QuantidadesPorCategoria.GetValueOrDefault(c.Id))</option> }</select>
+            <label for="estado">Estado de conservação</label><select id="estado" name="Estado"><option value="">Todos os estados</option>@foreach (var estado in Enum.GetValues<EstadoConservacao>()) { <option value="@estado" selected="@(Model.Filtro.Estado == estado)">@Apresentacao.Estado(estado)</option> }</select>
+            <label for="cidade">Cidade</label><input id="cidade" name="Cidade" value="@Model.Filtro.Cidade" maxlength="100" placeholder="Onde você está?" />
+            <label for="valor">Valor estimado até</label><div class="input-prefix"><span>R$</span><input id="valor" name="ValorMaximo" value="@Model.Filtro.ValorMaximo" inputmode="decimal" placeholder="Ex.: 500,00" /></div><p class="field-note">A estimativa ajuda a comparar. Aqui, a troca é de objetos.</p>
+            @if (User.Identity?.IsAuthenticated == true) { <label class="check-line"><input type="checkbox" name="ParaMim" value="true" checked="@Model.Filtro.ParaMim" /> Combina com meus desejos</label><a class="field-link" href="/desejos">Editar o que procuro ↗</a> }
+            @if (Model.Filtro.Curtidos) { <input type="hidden" name="Curtidos" value="true" /> }
+            <button class="button button-dark full-width" type="submit">Aplicar filtros</button><a class="clear-link" href="/#achados">Limpar filtros</a>
+        </form>
+        <div class="catalog-results"><div class="search-toolbar"><div class="search-field"><svg class="icon"><use href="#i-busca" /></svg><input form="filtros" name="Texto" value="@Model.Filtro.Texto" aria-label="Buscar objetos" maxlength="150" placeholder="O que você procura? Nome, categoria ou código..." /><button form="filtros" type="submit" aria-label="Buscar objetos">Buscar</button></div>
+        <label class="sort-label" for="ordem">Ordenar por<select form="filtros" id="ordem" name="Ordem" data-auto-submit><option value="Recentes" selected="@(Model.Filtro.Ordem == OrdemObjetos.Recentes)">Mais recentes</option><option value="Nome" selected="@(Model.Filtro.Ordem == OrdemObjetos.Nome)">Nome: A a Z</option><option value="MenorValor" selected="@(Model.Filtro.Ordem == OrdemObjetos.MenorValor)">Menor estimativa</option><option value="MaiorValor" selected="@(Model.Filtro.Ordem == OrdemObjetos.MaiorValor)">Maior estimativa</option></select></label></div>
+        <div class="result-meta"><span><strong>@Model.Resultado.Total</strong> @(Model.Resultado.Total == 1 ? "objeto disponível" : "objetos disponíveis")</span><span>Novas histórias esperam por aqui <span aria-hidden="true">↗</span></span></div>
+        @if (Model.Resultado.Itens.Count == 0) { <div class="empty-state"><svg class="icon"><use href="#i-busca" /></svg><h3>A próxima boa troca ainda vai aparecer.</h3><p>@(Model.Filtro.ParaMim ? "Cadastre desejos com palavras como câmera, livro ou violão. Depois, tente ampliar os filtros." : "Tente outra busca, amplie os filtros ou coloque seu primeiro objeto pra circular.")</p><a href="/objetos/novo" class="button button-outline">Cadastrar meu objeto</a></div> }
+        else { <div class="object-grid">@foreach (var objeto in Model.Resultado.Itens) { <partial name="_CartaoObjeto" model="objeto" /> }</div> }
+        @if (Model.Resultado.TotalPaginas > 1) { <nav class="pagination" aria-label="Páginas do catálogo">@if (Model.Resultado.Pagina > 1) { <a href="@Pagina(Model.Resultado.Pagina - 1)#achados">← Anterior</a> }<span>Página @Model.Resultado.Pagina de @Model.Resultado.TotalPaginas</span>@if (Model.Resultado.Pagina < Model.Resultado.TotalPaginas) { <a href="@Pagina(Model.Resultado.Pagina + 1)#achados">Próxima →</a> }</nav> }
+        </div>
+    </div>
+</section>
+<section class="how-it-works shell" id="como-funciona"><div><span class="eyebrow">BOM PRA TODO MUNDO</span><h2>Uma boa troca.<br />Três passos simples.</h2></div><ol><li><span>01</span><h3>Mostre o que você tem</h3><p>Cadastre aquele objeto em bom estado que pode ganhar outro lar.</p></li><li><span>02</span><h3>Encontre o que combina</h3><p>Explore os achados e demonstre interesse no que faz sentido pra você.</p></li><li><span>03</span><h3>Deu match? Fechô.</h3><p>O interesse é recíproco? O contato é liberado para vocês combinarem a troca.</p></li></ol></section>

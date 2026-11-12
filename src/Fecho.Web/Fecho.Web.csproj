@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../Fecho.Core/Fecho.Core.csproj" />
+    <ProjectReference Include="../Fecho.Infraestrutura/Fecho.Infraestrutura.csproj" />
+  </ItemGroup>
+</Project>
