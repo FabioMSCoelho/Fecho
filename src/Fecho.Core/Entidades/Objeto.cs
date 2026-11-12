@@ -12,12 +12,13 @@ public sealed class Objeto : EntidadeBase
     public EstadoConservacao EstadoConservacao { get; }
     public decimal? ValorEstimado { get; }
     public string? Imagem { get; }
-    public DateTime DataCadastro { get; } = DateTime.UtcNow;
+    public DateTime DataCadastro { get; }
     public StatusObjeto Status { get; private set; } = StatusObjeto.DISPONIVEL;
 
     public Objeto(int id, Usuario proprietario, Categoria categoria, string nome,
         EstadoConservacao estadoConservacao, string? descricao = null,
-        decimal? valorEstimado = null, string? imagem = null) : base(id)
+        decimal? valorEstimado = null, string? imagem = null,
+        DateTime? dataCadastro = null, StatusObjeto status = StatusObjeto.DISPONIVEL) : base(id)
     {
         Proprietario = proprietario ?? throw new ArgumentNullException(nameof(proprietario));
         Categoria = categoria ?? throw new ArgumentNullException(nameof(categoria));
@@ -31,6 +32,8 @@ public sealed class Objeto : EntidadeBase
             throw new ArgumentException("Valor estimado deve caber em DECIMAL(10,2), sem ser negativo.");
         ValorEstimado = valorEstimado;
         Imagem = Validacao.Opcional(imagem, nameof(imagem), 255);
+        DataCadastro = dataCadastro ?? DateTime.UtcNow;
+        Status = Validacao.EnumValido(status);
     }
 
     internal void MarcarTrocado()

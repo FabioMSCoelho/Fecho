@@ -28,14 +28,8 @@ public sealed class TrocaService
         Validacao.EnumValido(tipo);
         var usuario = ExigirAtivo(usuarioId);
         var objeto = _objetos.Obter(objetoId);
-        if (objeto.Proprietario.Equals(usuario))
-            throw new InvalidOperationException("Você não pode avaliar seu próprio objeto.");
-        ExigirAtivo(objeto.Proprietario.Id);
-        if (objeto.Status != StatusObjeto.DISPONIVEL)
-            throw new InvalidOperationException("Objeto indisponível.");
-        if (!_objetos.Listar().Any(o => o.Proprietario.Equals(usuario)
-                && o.Status == StatusObjeto.DISPONIVEL))
-            throw new InvalidOperationException("Cadastre pelo menos um objeto disponível para participar.");
+        RegrasNegociacao.ValidarAvaliacao(usuario, objeto, _objetos.Listar().Any(o =>
+            o.Proprietario.Equals(usuario) && o.Status == StatusObjeto.DISPONIVEL));
 
         var interesse = _interesses.Listar().FirstOrDefault(i =>
             i.Usuario.Equals(usuario) && i.Objeto.Equals(objeto));

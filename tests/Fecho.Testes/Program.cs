@@ -1,12 +1,98 @@
 using Fecho.Core.Compatibilidade;
+using Fecho.Core.Busca;
 using Fecho.Core.Entidades;
 using Fecho.Core.Enums;
 using Fecho.Core.Seguranca;
 using Fecho.Infraestrutura;
+using Fecho.Infraestrutura.MySql;
 
 // Verificador executável sem pacotes externos. Qualquer falha encerra com código 1.
 var casos = new List<(string Nome, Action Executar)>
 {
+    ("Configuração local preserva ambiente exportado e lê a última chave válida do arquivo", () =>
+    {
+        var prefixo = "FECHO_TEST_" + Guid.NewGuid().ToString("N");
+        var arquivo = Path.GetTempFileName();
+        var externa = "NAO_FECHO_" + prefixo;
+        try
+        {
+            Environment.SetEnvironmentVariable(prefixo + "_PRIORIDADE", "exportado");
+            File.WriteAllText(arquivo, $"{prefixo}_PRIORIDADE=arquivo\n{prefixo}_VALOR=''\n{prefixo}_VALOR='literal com espaço'\n{externa}=ignorado\n");
+            ConfiguracaoLocal.Carregar(arquivo);
+            Igual("exportado", Environment.GetEnvironmentVariable(prefixo + "_PRIORIDADE"));
+            Igual("literal com espaço", Environment.GetEnvironmentVariable(prefixo + "_VALOR"));
+            Exigir(Environment.GetEnvironmentVariable(externa) is null, "Chave fora do prefixo não pode ser carregada.");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(prefixo + "_PRIORIDADE", null);
+            Environment.SetEnvironmentVariable(prefixo + "_VALOR", null);
+            File.Delete(arquivo);
+        }
+    }),
+    ("Busca normaliza acentos, combina palavras e remove objetos duplicados", () =>
+    {
+        var c = new Cenario();
+        var violao = new Objeto(100, c.Bruno, c.Instrumentos, "Violão acústico", EstadoConservacao.BOM, "Madeira conservada");
+        var busca = new BuscaObjetos().Executar(new[] { violao, violao, c.Camera }, new FiltroObjetos("VIOLAO madeira"), c.Ana.Id);
+        Igual(1, busca.Total); Igual(100, busca.Itens[0].Id);
+    }),
+    ("Busca exclui próprios, trocados, donos inativos e IDs ignorados", () =>
+    {
+        var c = new Cenario();
+        var inativo = new Usuario(50, "Inativo", "inativo@example.com", Cenario.Senha, "11999990000", ativo: false);
+        Objeto[] origem = [c.Camera, new(100, c.Bruno, c.Instrumentos, "Já trocado", EstadoConservacao.BOM, status: StatusObjeto.TROCADO),
+            new(101, inativo, c.Instrumentos, "De inativo", EstadoConservacao.BOM),
+            new(102, c.Bruno, c.Instrumentos, "Ignorado", EstadoConservacao.BOM)];
+        Igual(0, new BuscaObjetos().Executar(origem, new FiltroObjetos(), c.Ana.Id, ignorados: new HashSet<int> { 102 }).Total);
+    }),
+    ("Merge sort alfabético ignora acentos e usa ID como desempate", () =>
+    {
+        var c = new Cenario();
+        Objeto[] origem = [new(103, c.Bruno, c.Instrumentos, "Zulu", EstadoConservacao.BOM),
+            new(102, c.Bruno, c.Instrumentos, "Álbum", EstadoConservacao.BOM),
+            new(101, c.Bruno, c.Instrumentos, "Album", EstadoConservacao.BOM)];
+        var resultado = new BuscaObjetos().Executar(origem, new FiltroObjetos(Ordem: OrdemObjetos.Nome));
+        Exigir(resultado.Itens.Select(o => o.Id).SequenceEqual(new[] { 101, 102, 103 }), "Ordem alfabética ou desempate incorreto.");
+    }),
+    ("Ordenação por valor mantém decimal exato e ausência de estimativa por último", () =>
+    {
+        var c = new Cenario();
+        Objeto[] origem = [new(101, c.Bruno, c.Instrumentos, "Sem valor", EstadoConservacao.BOM),
+            new(102, c.Bruno, c.Instrumentos, "Mais caro", EstadoConservacao.BOM, valorEstimado: 15.01m),
+            new(103, c.Bruno, c.Instrumentos, "Mais barato", EstadoConservacao.BOM, valorEstimado: 15m)];
+        var busca = new BuscaObjetos();
+        Exigir(busca.Executar(origem, new FiltroObjetos(Ordem: OrdemObjetos.MenorValor)).Itens.Select(o => o.Id)
+            .SequenceEqual(new[] { 103, 102, 101 }), "Menor valor incorreto.");
+        Exigir(busca.Executar(origem, new FiltroObjetos(Ordem: OrdemObjetos.MaiorValor)).Itens.Select(o => o.Id)
+            .SequenceEqual(new[] { 102, 103, 101 }), "Maior valor incorreto.");
+        Igual(1, busca.Executar(origem, new FiltroObjetos(ValorMaximo: 15m)).Total);
+    }),
+    ("Paginação ocorre depois da ordenação e limita páginas fora do intervalo", () =>
+    {
+        var c = new Cenario();
+        var origem = Enumerable.Range(1, 23).Reverse().Select(i => new Objeto(100 + i, c.Bruno, c.Instrumentos,
+            $"Objeto {i:D2}", EstadoConservacao.BOM)).ToArray();
+        var resultado = new BuscaObjetos().Executar(origem, new FiltroObjetos(Ordem: OrdemObjetos.Nome, Pagina: 999));
+        Igual(23, resultado.Total); Igual(3, resultado.TotalPaginas); Igual(3, resultado.Pagina);
+        Igual(5, resultado.Itens.Count); Igual(119, resultado.Itens[0].Id);
+    }),
+    ("Recomendação usa critério de desejos e não repete card compatível com dois desejos", () =>
+    {
+        var c = new Cenario();
+        var violao = new Objeto(100, c.Bruno, c.Instrumentos, "Violão acústico", EstadoConservacao.BOM);
+        Desejo[] desejos = [new(1, c.Ana, "violao", c.Instrumentos), new(2, c.Ana, "acustico", c.Instrumentos)];
+        var resultado = new BuscaObjetos().Executar(new[] { violao }, new FiltroObjetos(ParaMim: true), c.Ana.Id, desejos);
+        Igual(1, resultado.Total); Igual(1, resultado.QuantidadesPorCategoria[c.Instrumentos.Id]);
+        Igual(0, new BuscaObjetos().Executar(new[] { violao }, new FiltroObjetos(ParaMim: true), c.Ana.Id).Total);
+    }),
+    ("Busca rejeita filtros inválidos sem inventar resultados", () =>
+    {
+        var busca = new BuscaObjetos();
+        Falha<ArgumentException>(() => busca.Executar(Array.Empty<Objeto>(), new FiltroObjetos(Ordem: (OrdemObjetos)99)));
+        Falha<ArgumentException>(() => busca.Executar(Array.Empty<Objeto>(), new FiltroObjetos(ValorMaximo: -1m)));
+        Falha<ArgumentException>(() => busca.Executar(Array.Empty<Objeto>(), new FiltroObjetos(Texto: new string('x', 151))));
+    }),
     ("HashSet usa identidade por tipo e id, sem confundir entidades", () =>
     {
         var c = new Cenario();
@@ -84,6 +170,20 @@ var casos = new List<(string Nome, Action Executar)>
         Exigir(outra.ParaPersistencia().Length <= 255, "Hash excede VARCHAR(255).");
         Exigir(!outra.ParaPersistencia().Contains("Fecho@2026", StringComparison.Ordinal), "Senha exposta.");
         Falha<ArgumentException>(() => SenhaProtegida.Criar("curta"));
+    }),
+    ("Hash persistido é reconstituído sem alterar salt ou senha", () =>
+    {
+        var salvo = Cenario.Senha.ParaPersistencia();
+        var restaurado = SenhaProtegida.DaPersistencia(salvo);
+        Igual(salvo, restaurado.ParaPersistencia());
+        Exigir(restaurado.Confere("Fecho@2026"), "Senha original deve conferir após reidratação.");
+        Exigir(!restaurado.Confere("Outra@2026"), "Senha incorreta não pode conferir.");
+    }),
+    ("Reidratação rejeita hash inválido e custo de derivação desconhecido", () =>
+    {
+        foreach (var hash in new[] { "", "senha em texto", "PBKDF2-SHA256$999999999$AA==$AA==",
+            "PBKDF2-SHA256$600000$!$!", "PBKDF2-SHA256$600000$AA==$AA==" })
+            Falha<ArgumentException>(() => SenhaProtegida.DaPersistencia(hash));
     }),
     ("Autenticação confere senha e bloqueia usuário inativo", () =>
     {
